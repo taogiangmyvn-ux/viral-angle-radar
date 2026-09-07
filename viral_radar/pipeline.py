@@ -44,6 +44,19 @@ def _boolean(value: Any) -> bool:
     return str(value).strip().lower() in {"1", "true", "yes", "y"}
 
 
+def viral_tier(views: int | None, likes: int | None) -> str:
+    """Return an evidence tier. Opportunity scoring never upgrades a Watchlist post."""
+    views = views or 0
+    likes = likes or 0
+    if likes >= 1_000_000 or views >= 10_000_000:
+        return "Mega"
+    if likes >= 100_000 or views >= 3_000_000:
+        return "Breakout"
+    if likes >= 10_000 or views >= 1_000_000:
+        return "Qualified"
+    return "Watchlist"
+
+
 def normalize(raw: dict[str, Any], provider: str) -> dict[str, Any]:
     url, video_id = canonicalize_url(str(raw.get("canonical_url", "")))
     timestamp = now_iso()
@@ -60,6 +73,9 @@ def normalize(raw: dict[str, Any], provider: str) -> dict[str, Any]:
         "published_at": raw.get("published_at"),
         "category": raw.get("category") or "Uncategorized",
         "format": raw.get("format") or "Unclassified",
+        "campaign_territory": raw.get("campaign_territory") or "Unclassified",
+        "benchmark_brand": raw.get("benchmark_brand") or "Unspecified",
+        "source_type": raw.get("source_type") or "creator organic",
         "primary_angle": raw.get("primary_angle") or "Unclassified",
         "q4_pillars": raw.get("q4_pillars") or "",
         "gifting_keywords": raw.get("gifting_keywords") or "",
@@ -106,16 +122,22 @@ def discover(*, fixture: bool = False, csv_path: Path | None = None, observed_at
     snapshot_time = observed_at or now_iso()
     conn = connect()
     try:
+        if provider == "manual_csv":
+            stale_ids = [item["video_id"] for item in rows(conn, "SELECT video_id FROM videos WHERE source_provider='manual_csv'")]
+            for stale_id in stale_ids:
+                conn.execute("DELETE FROM trend_scores WHERE video_id=?", (stale_id,))
+                conn.execute("DELETE FROM metric_snapshots WHERE video_id=?", (stale_id,))
+                conn.execute("DELETE FROM videos WHERE video_id=?", (stale_id,))
         for item in normalized:
             conn.execute(
                 """INSERT INTO videos (
                 video_id, platform, canonical_url, creator_handle, creator_name,
                 creator_country, creator_country_evidence, language, caption,
-                published_at, category, format, primary_angle, q4_pillars,
+                published_at, category, format, campaign_territory, benchmark_brand, source_type, primary_angle, q4_pillars,
                 gifting_keywords, product_focus, occasion, brand_fit_notes, hook_summary,
                 proof_mechanism, paid_partnership, evidence_quality, source_provider,
                 is_fixture, collected_at, last_verified_at
-                ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
                 ON CONFLICT(video_id) DO UPDATE SET
                   canonical_url=excluded.canonical_url,
                   creator_handle=excluded.creator_handle,
@@ -127,6 +149,9 @@ def discover(*, fixture: bool = False, csv_path: Path | None = None, observed_at
                   published_at=excluded.published_at,
                   category=excluded.category,
                   format=excluded.format,
+                  campaign_territory=excluded.campaign_territory,
+                  benchmark_brand=excluded.benchmark_brand,
+                  source_type=excluded.source_type,
                   primary_angle=excluded.primary_angle,
                   q4_pillars=excluded.q4_pillars,
                   gifting_keywords=excluded.gifting_keywords,
@@ -144,7 +169,7 @@ def discover(*, fixture: bool = False, csv_path: Path | None = None, observed_at
                 tuple(item[key] for key in (
                     "video_id", "platform", "canonical_url", "creator_handle", "creator_name",
                     "creator_country", "creator_country_evidence", "language", "caption",
-                    "published_at", "category", "format", "primary_angle", "q4_pillars",
+                    "published_at", "category", "format", "campaign_territory", "benchmark_brand", "source_type", "primary_angle", "q4_pillars",
                     "gifting_keywords", "product_focus", "occasion", "brand_fit_notes", "hook_summary",
                     "proof_mechanism", "paid_partnership", "evidence_quality", "source_provider",
                     "is_fixture", "collected_at", "last_verified_at"
@@ -192,7 +217,7 @@ def score(config_name: str = "cobas-daughter-bodycare-q4") -> list[dict[str, Any
     config = json.loads((ROOT / "config" / f"{config_name}.json").read_text(encoding="utf-8"))
     weights = config["opportunity_scoring"]
     conn = connect()
-    videos = rows(conn, "SELECT * FROM videos WHERE lower(category) LIKE ?", (f"%{config['category'].lower()}%",))
+    videos = rows(conn, "SELECT * FROM videos")
     angle_counts = Counter(video["primary_angle"] for video in videos)
     calculated_at = now_iso()
     scored: list[dict[str, Any]] = []
@@ -279,7 +304,15 @@ def score(config_name: str = "cobas-daughter-bodycare-q4") -> list[dict[str, Any
              components["brand_fit_score"], components["q4_potential_score"],
              components["gifting_relevance_score"], explanation),
         )
-        scored.append({**video, **latest, **components, "trend_score": round(total, 2), "velocity_status": velocity_status, "explanation": explanation})
+        tier = viral_tier(latest.get("views"), latest.get("likes"))
+        signal = max(
+            _log_score(latest.get("likes"), 6.0),
+            _log_score(latest.get("views"), 7.0),
+        )
+        scored.append({**video, **latest, **components, "trend_score": round(total, 2),
+                       "velocity_status": velocity_status, "explanation": explanation,
+                       "viral_tier": tier, "viral_qualified": tier != "Watchlist",
+                       "viral_signal_score": round(signal, 2)})
     conn.commit()
     conn.close()
     scored.sort(key=lambda item: item["trend_score"], reverse=True)
@@ -291,8 +324,15 @@ def build_dataset() -> dict[str, Any]:
     scored = score()
     if any(not item["is_fixture"] for item in scored):
         scored = [item for item in scored if not item["is_fixture"]]
+    viral_videos = [item for item in scored if item["viral_qualified"]]
+    watchlist = [item for item in scored if not item["viral_qualified"]]
+    viral_videos.sort(key=lambda item: (
+        {"Mega": 3, "Breakout": 2, "Qualified": 1}.get(item["viral_tier"], 0),
+        item.get("likes") or 0,
+        item.get("views") or 0,
+    ), reverse=True)
     grouped: dict[str, list[dict[str, Any]]] = {}
-    for item in scored:
+    for item in viral_videos:
         grouped.setdefault(item["primary_angle"], []).append(item)
     angles = []
     for angle, items in grouped.items():
@@ -302,19 +342,27 @@ def build_dataset() -> dict[str, Any]:
         angles.append({
             "angle": angle,
             "video_count": len(items),
+            "campaign_territories": sorted({item["campaign_territory"] for item in items}),
             "median_score": round(median, 2),
             "max_score": max(values),
             "representative_url": items[0]["canonical_url"],
             "median_brand_fit": round(sum(item["brand_fit_score"] for item in items) / len(items), 2),
             "median_q4_potential": round(sum(item["q4_potential_score"] for item in items) / len(items), 2),
             "median_gifting_relevance": round(sum(item["gifting_relevance_score"] for item in items) / len(items), 2),
+            "total_likes": sum(item.get("likes") or 0 for item in items),
+            "max_likes": max(item.get("likes") or 0 for item in items),
+            "breakout_count": sum(item["viral_tier"] in {"Breakout", "Mega"} for item in items),
         })
-    angles.sort(key=lambda item: item["max_score"], reverse=True)
+    angles.sort(key=lambda item: (item["breakout_count"], item["max_likes"], item["max_score"]), reverse=True)
     return {
         "generated_at": now_iso(),
         "is_fixture_only": bool(scored) and all(item["is_fixture"] for item in scored),
-        "videos": scored,
+        "videos": viral_videos,
+        "viral_videos": viral_videos,
+        "watchlist": watchlist,
         "angles": angles,
+        "viral_rule": {"minimum_likes": 10000, "minimum_views": 1000000,
+                       "definition": "Qualified when likes >= 10,000 OR views >= 1,000,000"},
     }
 
 

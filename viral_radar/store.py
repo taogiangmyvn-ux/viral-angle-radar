@@ -24,6 +24,9 @@ CREATE TABLE IF NOT EXISTS videos (
   published_at TEXT,
   category TEXT,
   format TEXT,
+  campaign_territory TEXT,
+  benchmark_brand TEXT,
+  source_type TEXT,
   primary_angle TEXT,
   q4_pillars TEXT,
   gifting_keywords TEXT,
@@ -95,7 +98,8 @@ def connect() -> sqlite3.Connection:
     conn.executescript(SCHEMA)
     video_columns = {
         "q4_pillars": "TEXT", "gifting_keywords": "TEXT", "product_focus": "TEXT",
-        "occasion": "TEXT", "brand_fit_notes": "TEXT",
+        "occasion": "TEXT", "brand_fit_notes": "TEXT", "campaign_territory": "TEXT",
+        "benchmark_brand": "TEXT", "source_type": "TEXT",
     }
     score_columns = {
         "momentum_score": "REAL", "brand_fit_score": "REAL",

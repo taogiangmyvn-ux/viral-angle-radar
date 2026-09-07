@@ -1,6 +1,6 @@
 # CoBa's Daughter Opportunity Radar
 
-Daily US TikTok intelligence for CoBa's Daughter bodycare and Q4 gifting. The tool collects source links, stores metric snapshots, scores opportunities against the brand book and Q4 priorities, generates quick briefs, publishes a static dashboard, and exports Excel.
+Daily TikTok intelligence for CoBa's Daughter bodycare and Q4 gifting. The tool benchmarks viral gifting campaigns, scores their fit against the brand book and Q4 priorities, generates quick briefs, publishes a static dashboard, and exports Excel.
 
 ## Quick start
 
@@ -40,9 +40,20 @@ Create `brands/<slug>/` and add:
 
 Run `python3 -m viral_radar ingest-brand --brand <slug>`. PDF and DOCX extraction are optional and use `pypdf` and `python-docx` when installed. Extracted claims are never automatically promoted to approved claims.
 
-## Scoring
+## Viral qualification and taxonomy
 
-The 0–100 opportunity score is auditable:
+A post is a viral benchmark only when it has **at least 10,000 likes or 1,000,000 views**. Breakout means 100,000 likes or 3,000,000 views; Mega means 1,000,000 likes or 10,000,000 views. Below-threshold posts stay in the Watchlist and are excluded from angle rankings and brief evidence.
+
+The research hierarchy is:
+
+1. Campaign territory — the large gifting platform.
+2. Strategic angle — the repeatable creative argument.
+3. Hook — the specific opening line.
+4. Execution — talking head, build-with-me, carousel, unboxing, or another format.
+
+## Opportunity scoring
+
+The 0–100 opportunity score is auditable, but it is applied separately from viral qualification:
 
 - 25% trend momentum (velocity, engagement, recency and novelty)
 - 30% CoBa's Daughter brand fit
@@ -50,7 +61,7 @@ The 0–100 opportunity score is auditable:
 - 15% gifting keyword relevance
 - 5% evidence quality
 
-Brand fit checks bodycare ritual, sensorial luxury, gift-object value and product match. Q4 checks the four planning pillars—Gift Guide, Aesop Alternative, Keepsake and Occasion—plus seasonal intent. With only one snapshot, velocity is marked `insufficient_history` and remains conservative.
+Brand fit checks bodycare ritual, sensorial luxury, gift-object value and product match. Q4 checks the four planning pillars—Gift Guide, Aesop Alternative, Keepsake and Occasion—plus seasonal intent. With only one snapshot, velocity is marked `insufficient_history` and remains conservative. A high opportunity score can never promote a Watchlist post into the viral leaderboard.
 
 The public dashboard intentionally excludes internal revenue, AOV and channel-performance figures from the supplied Q4 plan.
 
