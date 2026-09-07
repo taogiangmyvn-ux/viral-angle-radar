@@ -1,0 +1,27 @@
+{
+  "market": "United States",
+  "language": "English",
+  "category": "skincare",
+  "formats": ["talking head", "expert review", "UGC review", "ranking", "reaction", "comparison", "routine audit"],
+  "angles": [
+    "brutally honest review",
+    "dermatologist rates",
+    "best vs worst",
+    "worth the hype",
+    "affordable alternative",
+    "products I trust",
+    "hidden gem",
+    "viral but overrated",
+    "routine audit",
+    "problem solution"
+  ],
+  "scoring": {
+    "velocity": 0.30,
+    "engagement": 0.20,
+    "recency": 0.15,
+    "relevance": 0.20,
+    "novelty": 0.10,
+    "evidence": 0.05
+  }
+}
+

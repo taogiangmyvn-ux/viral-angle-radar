@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Daily short-form video and creative angle intelligence">
+  <title>Viral Angle Radar</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="shell">
+    <aside>
+      <div class="brand-mark"><span>VA</span><strong>Viral Angle<br>Radar</strong></div>
+      <nav>
+        <button class="nav-item active" data-view="overview">Overview</button>
+        <button class="nav-item" data-view="videos">Video library</button>
+        <button class="nav-item" data-view="angles">Angle radar</button>
+        <button class="nav-item" data-view="briefs">Brief builder</button>
+        <button class="nav-item" data-view="quality">Data quality</button>
+      </nav>
+      <div class="side-note">US · English<br>Skincare · TikTok</div>
+    </aside>
+    <main>
+      <header>
+        <div><p class="eyebrow">Creative intelligence</p><h1 id="page-title">What is moving today</h1></div>
+        <div class="freshness"><span class="pulse"></span><span id="updated">Loading…</span></div>
+      </header>
+      <div id="fixture-warning" class="warning hidden">Demo mode — performance data shown here is synthetic and must not be used as live trend evidence.</div>
+      <section id="overview" class="view active">
+        <div id="kpis" class="kpis"></div>
+        <div class="section-head"><div><p class="eyebrow">Priority feed</p><h2>Top rising videos</h2></div><button class="ghost" data-go="videos">View all</button></div>
+        <div id="top-videos" class="video-grid"></div>
+        <div class="section-head"><div><p class="eyebrow">Patterns</p><h2>Angles to watch</h2></div></div>
+        <div id="top-angles" class="angle-list"></div>
+      </section>
+      <section id="videos" class="view">
+        <div class="toolbar"><input id="search" type="search" placeholder="Search creator, hook, angle…"><select id="angle-filter"><option value="">All angles</option></select></div>
+        <div class="table-wrap"><table><thead><tr><th>Trend</th><th>Creator & source</th><th>Angle</th><th>Hook</th><th>Views</th><th>Evidence</th></tr></thead><tbody id="video-rows"></tbody></table></div>
+      </section>
+      <section id="angles" class="view"><div class="section-head"><div><p class="eyebrow">Leaderboard</p><h2>Angle momentum</h2></div></div><div id="angle-radar" class="radar-grid"></div></section>
+      <section id="briefs" class="view">
+        <div class="brief-layout">
+          <div class="panel"><p class="eyebrow">Quick brief</p><h2>Turn a trend into a concept</h2><label>Brand<input value="Demo Skincare" disabled></label><label>Product<input id="brief-product" value="Barrier Serum"></label><label>Objective<select><option>Product consideration</option><option>Awareness</option><option>Conversion</option></select></label><label>Angle<select id="brief-angle"></select></label><button id="generate-brief" class="primary">Generate preview</button></div>
+          <article id="brief-preview" class="brief-preview"><p class="muted">Choose an angle to preview a source-backed brief.</p></article>
+        </div>
+      </section>
+      <section id="quality" class="view"><div class="section-head"><div><p class="eyebrow">Audit</p><h2>Evidence and freshness</h2></div></div><div id="quality-cards" class="quality-grid"></div></section>
+    </main>
+  </div>
+  <script src="app.js" defer></script>
+</body>
+</html>
+

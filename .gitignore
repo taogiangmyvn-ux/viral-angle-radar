@@ -1,0 +1,13 @@
+.env
+.venv/
+__pycache__/
+.pytest_cache/
+node_modules/
+web/dist/
+data/radar.db
+data/run-log.jsonl
+exports/*.xlsx
+exports/briefs/
+work/
+site/assets/
+site/data.json

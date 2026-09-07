@@ -1,0 +1,61 @@
+name: Daily Viral Angle Radar
+
+on:
+  schedule:
+    - cron: "15 1 * * *"
+  workflow_dispatch:
+    inputs:
+      fixture:
+        description: "Run with demo fixture data"
+        required: false
+        default: true
+        type: boolean
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: viral-angle-radar-pages
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    env:
+      LIVE_PROVIDER_URL: ${{ secrets.LIVE_PROVIDER_URL }}
+      LIVE_PROVIDER_TOKEN: ${{ secrets.LIVE_PROVIDER_TOKEN }}
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install Excel fallback
+        run: pip install openpyxl pypdf python-docx
+      - name: Run tests
+        run: python -m unittest discover -s tests -v
+      - name: Build daily outputs from configured provider
+        if: ${{ env.LIVE_PROVIDER_URL != '' }}
+        run: python -m viral_radar daily --live
+      - name: Build demo outputs when no provider is configured
+        if: ${{ env.LIVE_PROVIDER_URL == '' }}
+        run: python -m viral_radar daily --fixture
+      - name: Upload Excel
+        uses: actions/upload-artifact@v4
+        with:
+          name: viral-angle-radar-excel
+          path: outputs/viral-angle-radar.xlsx
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - name: Deploy Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

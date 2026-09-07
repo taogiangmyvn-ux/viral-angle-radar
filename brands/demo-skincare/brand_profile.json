@@ -1,0 +1,20 @@
+{
+  "brand": "Demo Skincare",
+  "positioning": "Straightforward barrier care for sensitive, acne-prone skin.",
+  "audience": "US consumers aged 20–35 with sensitive or acne-prone skin.",
+  "tone": ["clear", "warm", "credible", "natural American English"],
+  "approved_claims": [
+    "Fragrance-free",
+    "Supports the skin moisture barrier",
+    "Lightweight texture"
+  ],
+  "prohibited_claims": [
+    "Cures acne",
+    "Repairs the barrier overnight",
+    "Clinically proven unless a study is supplied"
+  ],
+  "differentiators": ["Simple routine", "Sensitive-skin focus", "Accessible price"],
+  "proof_points": ["Ceramide blend", "Fragrance-free formula"],
+  "cta_preferences": ["Learn more", "See how it fits your routine"]
+}
+
