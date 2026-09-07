@@ -11,6 +11,10 @@ python3 -m http.server 8080 --directory site
 
 Open `http://localhost:8080`.
 
+For a quick offline preview, run the daily command once and then open
+`web/static/index.html` directly. The generated `data.js` bundle allows the
+dashboard to work through a local `file://` URL as well as on GitHub Pages.
+
 ## Commands
 
 ```bash

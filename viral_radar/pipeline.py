@@ -579,7 +579,12 @@ def export_site() -> Path:
     site.mkdir(parents=True, exist_ok=True)
     (site / "data.json").write_text(json.dumps(dataset, ensure_ascii=False, indent=2), encoding="utf-8")
     static = ROOT / "web" / "static"
-    for name in ("index.html", "app.js", "styles.css"):
+    # Keep a JavaScript data bundle beside the source UI so the dashboard also
+    # works when index.html is opened directly through file://. Browsers block
+    # fetch("data.json") in that mode, while GitHub Pages can use either path.
+    data_js = "window.__RADAR_DATA__ = " + json.dumps(dataset, ensure_ascii=False).replace("</", "<\\/") + ";\n"
+    (static / "data.js").write_text(data_js, encoding="utf-8")
+    for name in ("index.html", "app.js", "styles.css", "data.js"):
         shutil.copy2(static / name, site / name)
     return site
 
