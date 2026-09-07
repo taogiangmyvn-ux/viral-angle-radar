@@ -3,6 +3,7 @@
 __pycache__/
 .pytest_cache/
 node_modules/
+node_modules
 web/dist/
 data/radar.db
 data/run-log.jsonl
@@ -11,3 +12,4 @@ exports/briefs/
 work/
 site/assets/
 site/data.json
+outputs/*.inspect.ndjson
