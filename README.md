@@ -4,6 +4,8 @@ Daily TikTok intelligence for CoBa's Daughter bodycare and Q4 gifting. The tool 
 
 The Brief Builder includes three distinct Q4 products: the Exfoliate & Nourish 3-Piece Set, the Scrub & Soothe 7-Piece Set, and the Bath & Body 7-Piece Gift Basket. Each selection carries its own official product link, contents, packaging proof and creator direction.
 
+Each strategic angle has its own viral creative playbook: psychological engine, recommended TikTok-native format, first frame, story beats, edit rhythm and hooks. The dashboard also carries a dated US sound snapshot in `data/trending_sounds.json`. Sound suggestions are inspiration, not a promise of virality; branded and paid content must verify availability and commercial usage rights on the posting date.
+
 ## Quick start
 
 ```bash

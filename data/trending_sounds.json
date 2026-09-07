@@ -1,0 +1,15 @@
+{
+  "market": "United States",
+  "verified_at": "2026-09-01",
+  "source_name": "TikTok Newsroom — US Songs of the Summer 2026",
+  "source_url": "https://newsroom.tiktok.com/tiktoks-global-and-us-song-of-the-summer-2026-katy-perrys-the-one-that-got-away?lang=en",
+  "commercial_music_library_url": "https://ads.tiktok.com/business/creativecenter/music/pc/en",
+  "rights_note": "Trend signal only. Confirm the exact sound is available for the creator account and intended placement. Brand and paid usage should use a properly licensed track or TikTok Commercial Music Library alternative.",
+  "sounds": [
+    {"track": "The One That Got Away", "artist": "Katy Perry", "signal": "TikTok Global Song of Summer 2026", "mood": "nostalgic, emotional", "best_for": ["Gift the discovery she has not seen", "Build a recipient-coded ritual"]},
+    {"track": "Cinderella (feat. Ty Dolla $ign)", "artist": "Mac Miller", "signal": "#2 US Song of Summer 2026", "mood": "warm, heartfelt", "best_for": ["Build a recipient-coded ritual", "Curate her aesthetic in miniature"]},
+    {"track": "It Ain't Over 'Til It's Over", "artist": "Lenny Kravitz", "signal": "#3 US Song of Summer 2026", "mood": "elegant, nostalgic", "best_for": ["Turn products into a complete ritual", "Earn the right to recommend it as a gift"]},
+    {"track": "Earrings", "artist": "Malcolm Todd", "signal": "#4 US Song of Summer 2026", "mood": "dreamy, intimate", "best_for": ["Curate her aesthetic in miniature", "Gift the discovery she has not seen"]},
+    {"track": "Midnight Sun", "artist": "Zara Larsson", "signal": "TikTok Pop Girl Summer 2026 honor", "mood": "bright, upbeat", "best_for": ["Abundance that solves the whole gift list", "Be the first to edit the season's best sets"]}
+  ]
+}

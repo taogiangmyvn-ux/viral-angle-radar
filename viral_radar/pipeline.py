@@ -354,6 +354,11 @@ def build_dataset() -> dict[str, Any]:
             "breakout_count": sum(item["viral_tier"] in {"Breakout", "Mega"} for item in items),
         })
     angles.sort(key=lambda item: (item["breakout_count"], item["max_likes"], item["max_score"]), reverse=True)
+    sound_path = ROOT / "data" / "trending_sounds.json"
+    trending_sounds = json.loads(sound_path.read_text(encoding="utf-8")) if sound_path.exists() else {
+        "market": "United States", "verified_at": None, "sounds": [],
+        "rights_note": "No verified sound snapshot is available."
+    }
     return {
         "generated_at": now_iso(),
         "is_fixture_only": bool(scored) and all(item["is_fixture"] for item in scored),
@@ -361,6 +366,7 @@ def build_dataset() -> dict[str, Any]:
         "viral_videos": viral_videos,
         "watchlist": watchlist,
         "angles": angles,
+        "trending_sounds": trending_sounds,
         "viral_rule": {"minimum_likes": 10000, "minimum_views": 1000000,
                        "definition": "Qualified when likes >= 10,000 OR views >= 1,000,000"},
     }
