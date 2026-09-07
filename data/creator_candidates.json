@@ -1,0 +1,47 @@
+{
+  "method": "Shortlist public creator profiles; confirm US location, then audit at least three recent comparable posts. Rate likelihood is a planning estimate, never a quoted rate.",
+  "candidates": [
+    {
+      "platform": "Instagram",
+      "handle": "@jemaialzonia",
+      "name": "Jemaia Alzonia",
+      "profile_url": "https://www.instagram.com/jemaialzonia/",
+      "country": "United States",
+      "location_evidence": "Profile states Dallas",
+      "follower_count": 29700,
+      "audited_post_count": 1,
+      "observed_reference_likes": 9,
+      "viral_post_count": 0,
+      "voiceover_fit": 95,
+      "music_edit_fit": 72,
+      "candid_fit": 92,
+      "ad_saturation": "Needs review",
+      "contact_status": "Contact route in profile bio",
+      "rate_likelihood_under_200": "Medium",
+      "rate_basis": "Model estimate from follower band only; request a quote before booking",
+      "source_url": "https://www.instagram.com/p/Db3gF5hhxVx/",
+      "verified_at": "2026-09-07"
+    },
+    {
+      "platform": "Instagram",
+      "handle": "@sheissupra",
+      "name": "Supra",
+      "profile_url": "https://www.instagram.com/sheissupra/",
+      "country": "Spain",
+      "location_evidence": "Profile states Alicante",
+      "follower_count": 37700,
+      "audited_post_count": 1,
+      "observed_reference_likes": 59000,
+      "viral_post_count": 1,
+      "voiceover_fit": 65,
+      "music_edit_fit": 98,
+      "candid_fit": 92,
+      "ad_saturation": "Needs review",
+      "contact_status": "Contact route in profile bio",
+      "rate_likelihood_under_200": "Medium",
+      "rate_basis": "Model estimate from follower band only; request a quote before booking",
+      "source_url": "https://www.instagram.com/p/DbDX2Vwt3D5/",
+      "verified_at": "2026-09-07"
+    }
+  ]
+}

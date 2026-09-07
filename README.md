@@ -2,9 +2,17 @@
 
 Daily TikTok intelligence for CoBa's Daughter bodycare and Q4 gifting. The tool benchmarks viral gifting campaigns, scores their fit against the brand book and Q4 priorities, generates quick briefs, publishes a static dashboard, and exports Excel.
 
+The shared dashboard also includes an evergreen **Routine Integration** lane and a **Creator Discovery** queue. Routine Integration separates voice-over reviews from trendy-music edits and explicitly distinguishes an evergreen execution reference from viral proof. Creator Discovery favors verified-US micro-creators, scores routine/candid/viral potential, requires a three-post audit before shortlist approval, and labels any likelihood of a rate at or below $200 as an unconfirmed planning estimate.
+
 The Brief Builder includes three distinct Q4 products: the Exfoliate & Nourish 3-Piece Set, the Scrub & Soothe 7-Piece Set, and the Bath & Body 7-Piece Gift Basket. Each selection carries its own official product link, contents, packaging proof and creator direction.
 
 Each strategic angle has its own viral creative playbook: psychological engine, recommended TikTok-native format, first frame, story beats, edit rhythm and hooks. The dashboard also carries a dated US sound snapshot in `data/trending_sounds.json`. Sound suggestions are inspiration, not a promise of virality; branded and paid content must verify availability and commercial usage rights on the posting date.
+
+## Trend alerts and Slack
+
+The daily run compares each format and qualified creator shortlist with its prior snapshot and suppresses repeat notifications. A Slack alert is created only when a format appears across at least two viral-qualified creator posts, gains at least two new qualifying examples, newly crosses the Breakout/Mega threshold, or a verified-US creator becomes shortlist-ready after a three-post audit. The message includes the format or creator, evidence and dashboard link.
+
+To enable delivery, create a Slack Incoming Webhook for the intended channel and save it as the GitHub Actions repository secret `SLACK_WEBHOOK_URL`. The webhook value is never stored in the repository. `RADAR_DASHBOARD_URL` controls the link in the notification.
 
 ## Quick start
 
@@ -72,6 +80,15 @@ The 0–100 opportunity score is auditable, but it is applied separately from vi
 Brand fit checks bodycare ritual, sensorial luxury, gift-object value and product match. Q4 checks the four planning pillars—Gift Guide, Aesop Alternative, Keepsake and Occasion—plus seasonal intent. With only one snapshot, velocity is marked `insufficient_history` and remains conservative. A high opportunity score can never promote a Watchlist post into the viral leaderboard.
 
 The public dashboard intentionally excludes internal revenue, AOV and channel-performance figures from the supplied Q4 plan.
+
+## Creator discovery method
+
+- Best micro band: 5K–50K followers; up to 100K can remain in the research queue.
+- Verify location from a public profile or credible provider. Never infer it from voice or appearance.
+- Audit at least three comparable recent posts before a creator can become shortlist-ready.
+- Assess voice-over fit, music-edit fit, candidness, viral evidence and ad saturation separately.
+- Keep private contact details out of the public dataset; store only the contact-route status.
+- Treat budget likelihood as an estimate until deliverables, usage rights and an actual quote are confirmed.
 
 ## GitHub Pages and daily update
 

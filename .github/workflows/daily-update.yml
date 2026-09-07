@@ -29,6 +29,8 @@ jobs:
     env:
       LIVE_PROVIDER_URL: ${{ secrets.LIVE_PROVIDER_URL }}
       LIVE_PROVIDER_TOKEN: ${{ secrets.LIVE_PROVIDER_TOKEN }}
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      RADAR_DASHBOARD_URL: https://taogiangmyvn-ux.github.io/viral-angle-radar/
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -38,6 +40,13 @@ jobs:
         with:
           python-version: "3.12"
           cache: pip
+      - name: Restore trend comparison baseline
+        uses: actions/cache/restore@v4
+        with:
+          path: data/trend_baseline.json
+          key: viral-format-baseline-${{ github.run_id }}
+          restore-keys: |
+            viral-format-baseline-
       - name: Install Excel fallback
         run: pip install -r requirements.txt
       - name: Run tests
@@ -53,6 +62,12 @@ jobs:
         with:
           name: viral-angle-radar-excel
           path: outputs/viral-angle-radar.xlsx
+      - name: Save trend comparison baseline
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: data/trend_baseline.json
+          key: viral-format-baseline-${{ github.run_id }}
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Upload Pages artifact

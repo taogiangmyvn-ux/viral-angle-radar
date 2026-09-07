@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import urlsplit, urlunsplit
 
+from .alerts import ALERT_PATH, run_alert_cycle
 from .store import ROOT, connect, log_run, rows
 
 
@@ -359,6 +360,13 @@ def build_dataset() -> dict[str, Any]:
         "market": "United States", "verified_at": None, "sounds": [],
         "rights_note": "No verified sound snapshot is available."
     }
+    routine_path = ROOT / "data" / "routine_references.json"
+    routine_references = json.loads(routine_path.read_text(encoding="utf-8")) if routine_path.exists() else {"references": []}
+    creator_path = ROOT / "data" / "creator_candidates.json"
+    creator_source = json.loads(creator_path.read_text(encoding="utf-8")) if creator_path.exists() else {"candidates": []}
+    creator_candidates = [score_creator_candidate(item) for item in creator_source.get("candidates", [])]
+    creator_candidates.sort(key=lambda item: item["shortlist_score"], reverse=True)
+    latest_alert = json.loads(ALERT_PATH.read_text(encoding="utf-8")) if ALERT_PATH.exists() else None
     return {
         "generated_at": now_iso(),
         "is_fixture_only": bool(scored) and all(item["is_fixture"] for item in scored),
@@ -367,9 +375,49 @@ def build_dataset() -> dict[str, Any]:
         "watchlist": watchlist,
         "angles": angles,
         "trending_sounds": trending_sounds,
+        "routine_references": routine_references,
+        "creator_candidates": creator_candidates,
+        "creator_discovery_method": creator_source.get("method"),
+        "creator_scoring_rules": {
+            "micro_fit": "Best band 5K–50K followers; up to 100K may remain in research queue.",
+            "engagement_evidence": "High-confidence engagement requires at least 3 comparable recent posts.",
+            "us_fit": "Country/location must be supported by public profile or provider evidence.",
+            "budget": "Likelihood under $200 is an unconfirmed planning estimate until a quote is received.",
+            "shortlist": "Only verified-US candidates with 3+ audited posts and score >=70 qualify for proactive alerts."
+        },
+        "latest_trend_alert": latest_alert,
         "viral_rule": {"minimum_likes": 10000, "minimum_views": 1000000,
                        "definition": "Qualified when likes >= 10,000 OR views >= 1,000,000"},
     }
+
+
+def score_creator_candidate(item: dict[str, Any]) -> dict[str, Any]:
+    followers = int(item.get("follower_count") or 0)
+    audited = int(item.get("audited_post_count") or 0)
+    likes = int(item.get("observed_reference_likes") or 0)
+    viral_posts = int(item.get("viral_post_count") or 0)
+    if 5_000 <= followers <= 50_000:
+        micro = 100.0
+    elif 0 < followers < 5_000:
+        micro = 85.0
+    elif followers <= 100_000:
+        micro = 70.0
+    else:
+        micro = 25.0
+    post_signal = min(100.0, (likes / max(1, followers)) * 100.0 * 2.5)
+    viral_signal = min(100.0, viral_posts * 70.0 + post_signal * 0.30)
+    format_fit = (float(item.get("voiceover_fit") or 0) + float(item.get("music_edit_fit") or 0) + float(item.get("candid_fit") or 0)) / 3
+    us_fit = 100.0 if item.get("country") == "United States" else 0.0
+    budget_map = {"High": 100.0, "Medium": 70.0, "Low": 35.0, "Unknown": 0.0}
+    budget = budget_map.get(str(item.get("rate_likelihood_under_200") or "Unknown"), 0.0)
+    confidence = min(100.0, audited / 3 * 100.0)
+    raw = micro * 0.25 + viral_signal * 0.20 + format_fit * 0.25 + us_fit * 0.20 + budget * 0.10
+    score = raw * (0.65 + 0.35 * confidence / 100.0)
+    status = "Shortlist ready" if us_fit == 100 and audited >= 3 and score >= 70 else ("Not US eligible" if us_fit == 0 else "Needs 3-post audit")
+    return {**item, "micro_fit_score": round(micro), "viral_potential_score": round(viral_signal),
+            "format_fit_score": round(format_fit), "us_fit_score": round(us_fit),
+            "evidence_confidence_score": round(confidence), "shortlist_score": round(score),
+            "shortlist_status": status}
 
 
 def ingest_brand(slug: str) -> dict[str, Any]:
@@ -681,8 +729,9 @@ def daily(fixture: bool, live: bool = False) -> dict[str, Any]:
         "Bath & Body Care Gift Set – Luxury Spa-Inspired Gift Basket (7-Piece)",
     ]
     briefs = [generate_brief("cobas-daughter", product) for product in q4_products]
+    alert = run_alert_cycle(build_dataset())
     site = export_site()
     workbook = export_excel()
-    result = {"discovery": discovery, "brief_id": briefs[0]["brief_id"], "brief_ids": [brief["brief_id"] for brief in briefs], "site": str(site), "workbook": str(workbook)}
+    result = {"discovery": discovery, "brief_id": briefs[0]["brief_id"], "brief_ids": [brief["brief_id"] for brief in briefs], "trend_alert": {"status": alert["status"], "count": len(alert["alerts"]), "slack": alert["slack"]}, "site": str(site), "workbook": str(workbook)}
     log_run({"event": "daily_complete", "at": now_iso(), **result})
     return result

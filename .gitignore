@@ -7,10 +7,12 @@ node_modules
 web/dist/
 data/radar.db
 data/run-log.jsonl
+data/trend_baseline.json
 exports/*.xlsx
 exports/briefs/
 work/
 site/assets/
 site/data.json
 outputs/*.inspect.ndjson
+outputs/trend-alert.json
 brands/*/extracted_context.json

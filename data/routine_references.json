@@ -1,0 +1,56 @@
+{
+  "lane": "Routine Integration",
+  "definition": "An evergreen creative territory where body care is embedded in a real shower, shave or getting-ready routine. It can be executed as a voice-over review or a trendy-music edit.",
+  "references": [
+    {
+      "id": "ig-db3gf5hhxvx",
+      "platform": "Instagram",
+      "url": "https://www.instagram.com/p/Db3gF5hhxVx/",
+      "creator_handle": "@jemaialzonia",
+      "creator_name": "Jemaia Alzonia",
+      "follower_count": 29700,
+      "location": "Dallas, United States",
+      "us_eligible": true,
+      "observed_likes": 9,
+      "execution": "Voice-over routine review",
+      "evidence_role": "Evergreen format reference — not viral proof",
+      "first_frame": "After-shaving leg routine title in a real bathroom setting",
+      "story_pattern": "Skin context → ordered routine steps → product integration → smoother-looking finish",
+      "why_it_works": "The product earns relevance as one useful step inside an existing behavior instead of interrupting the routine as an ad.",
+      "coba_adaptation": "Integrate one CoBa product into a 3–5 step low-maintenance shower or shaving routine and explain the job it performs in natural American English.",
+      "contact_status": "Creator lists collaboration contact in bio; use the profile contact route",
+      "verified_at": "2026-09-07"
+    },
+    {
+      "id": "ig-dbdx2vwt3d5",
+      "platform": "Instagram",
+      "url": "https://www.instagram.com/p/DbDX2Vwt3D5/",
+      "creator_handle": "@sheissupra",
+      "creator_name": "Supra",
+      "follower_count": 37700,
+      "location": "Alicante, Spain",
+      "us_eligible": false,
+      "observed_likes": 59000,
+      "execution": "Trendy-music routine edit",
+      "evidence_role": "Viral execution reference — creator is not US-based",
+      "first_frame": "Post-shower towel-wrap shot holding the routine products with a clear promise overlay",
+      "story_pattern": "Outcome promise → fast product stack → tactile application cuts → smooth-legs payoff",
+      "why_it_works": "The edit is instantly readable without dialogue, feels candid and creates product-search intent through a simple combo reveal.",
+      "coba_adaptation": "Use a rising commercially cleared sound, 4–7 beat-matched close-ups and one plain-English overlay such as ‘the Vietnamese bodycare combo for smooth-looking legs.’",
+      "contact_status": "Creator lists collaboration contact in bio; use the profile contact route",
+      "verified_at": "2026-09-07"
+    }
+  ],
+  "discovery_keywords": [
+    "after shower body routine", "after shaving leg routine", "everything shower bodycare",
+    "smooth legs routine", "body scrub routine", "post shower routine", "bodycare combo"
+  ],
+  "discovery_hashtags": ["#bodycareroutine", "#showerroutine", "#aftershaveroutine", "#everythingshower", "#smoothlegs", "#hygieneroutine"]
+  ,"trend_sources": [
+    {
+      "label": "TikTok Creative Center — #bodycareroutine",
+      "url": "https://ads.tiktok.com/business/creativecenter/hashtag/bodycareroutine/mobile/en?countryCode=US&period=365",
+      "use": "Recheck related videos and regional popularity during each scan; validate each post's current public metrics separately."
+    }
+  ]
+}
