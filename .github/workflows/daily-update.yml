@@ -1,6 +1,9 @@
 name: Daily Viral Angle Radar
 
 on:
+  push:
+    branches:
+      - main
   schedule:
     - cron: "15 1 * * *"
   workflow_dispatch:
