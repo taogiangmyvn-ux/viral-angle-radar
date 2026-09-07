@@ -417,6 +417,10 @@ def generate_brief(slug: str, product: str, top_angles: int = 3) -> dict[str, An
         selected_videos.append(candidate)
     brief_id = f"{slug}-{datetime.now().strftime('%Y%m%d-%H%M%S')}"
     tone = ", ".join(profile.get("tone", ["clear", "credible"]))
+    product_lower = product.lower()
+    is_refill = "refill" in product_lower
+    is_aloe = "aloe" in product_lower
+    is_gift = "gift" in product_lower or "set" in product_lower
     hooks = [
         f"What do you give the woman who already has everything? A body-care ritual she will actually keep.",
         f"This is the rare {product} that feels as considered as the person receiving it.",
@@ -424,6 +428,88 @@ def generate_brief(slug: str, product: str, top_angles: int = 3) -> dict[str, An
     ]
     sources = [{"url": item["canonical_url"], "creator": item["creator_name"], "angle": item["primary_angle"],
                 "relevance": f"Uses {item['format']} with {item['proof_mechanism'] or 'observable product evidence'}."} for item in selected_videos]
+    main_reference = sources[0]["url"] if sources else ""
+    mandatory_reference = ""
+    main_idea = (
+        "Make the gift feel chosen for one specific woman. Show the complete body-care ritual, "
+        "then make the handwoven keepsake the reason it feels considered rather than generic."
+        if is_gift else
+        f"Show one clear body-care concern, use {product} on camera, and make the visible product experience the proof."
+    )
+    content_direction = [
+        "Open with one relatable recipient tension or body-care concern.",
+        "Show the product clearly before explaining it.",
+        "Use the product on camera and capture one observable proof point.",
+        "Return to the strategic angle and end with one direct purchase CTA.",
+    ]
+    must_include = [
+        f"Show {product} clearly with the label readable and not mirror-flipped.",
+        "Say CoBa’s Daughter clearly on camera or in the caption.",
+        "Describe the brand as Vietnamese-inspired, low-maintenance luxury body care.",
+        "Include a close-up product application or use moment.",
+        "End with a clear purchase CTA.",
+    ]
+    if is_gift:
+        must_include += [
+            "Show the full set and the handwoven packaging as a functional keepsake.",
+            "Name the specific recipient or gifting occasion.",
+            "Include a two-hand gifting or receiving gesture between two people.",
+        ]
+    if is_refill:
+        must_include += ["Show the original jar and refill pouch together.", "Show the actual refill process."]
+    if is_aloe:
+        main_reference = "https://www.instagram.com/reel/Dak4IbANu-e/"
+        mandatory_reference = "https://www.instagram.com/reel/DaNXox8pcWV/"
+        sources = [
+            {"url": main_reference, "creator": "Main execution reference",
+             "angle": "Immediate cooling-and-soothing transformation",
+             "relevance": "Shows the intended before, application, and after sequence."},
+            {"url": mandatory_reference, "creator": "Mandatory droplet reference",
+             "angle": "Aloe droplet hero",
+             "relevance": "Defines the required clean product hero shot."},
+        ]
+        hooks = [
+            "If your skin feels hot and tight after being outside, do this first.",
+            "This is the cooling body-care step I reach for before my skin starts feeling dry.",
+            "My summer skin reset takes less than a minute—and I keep the refill ready.",
+        ]
+        content_direction = [
+            "Before: show skin feeling hot, dry, tight, or uncomfortable after heat, sun, outdoor activity, or a shower.",
+            "Apply Aloe Gel immediately with a close-up texture shot.",
+            "After: show skin looking calmer, fresher, smoother, and hydrated.",
+            "Show a clean droplet hero shot before the purchase CTA.",
+        ]
+        must_include += ["Include an immediate before-and-after result.", "Capture a clean Aloe droplet hero shot."]
+        structure = [
+            "0–3s: Show the heat, sun, shower, or outdoor trigger and the skin concern.",
+            "3–8s: Introduce CoBa’s Daughter Refill Aloe and show the pouch with the original jar.",
+            "8–16s: Refill the jar, then capture the clean droplet hero shot.",
+            "16–25s: Apply close-up and show the immediate fresher, smoother, hydrated-looking after.",
+            "25–30s: State the lightweight cooling benefit and end with the purchase CTA.",
+        ]
+        cta_options = ["Grab the limited Aloe before it sells out."]
+        key_message = (
+            "CoBa’s Daughter Aloe Gel helps cool and soothe hot, dry, or irritated-feeling skin "
+            "while providing lightweight hydration without feeling heavy or sticky."
+        )
+    else:
+        structure = [
+            "0–3s: Direct-to-camera gifting tension with the full set in frame.",
+            "3–8s: Name the recipient or occasion and why generic beauty gifts miss.",
+            "8–18s: Open the handwoven case with both hands; show the ritual sequence.",
+            "18–25s: Demonstrate one texture and give approved, observable proof.",
+            "25–30s: Return to the keepsake and close with a gift-or-keep CTA.",
+        ]
+        cta_options = profile.get("cta_preferences", ["Learn more"])
+        key_message = profile.get("positioning", "Positioning not supplied")
+    approval_gates = [
+        "Main product and CoBa’s Daughter name are unmistakable.",
+        "The selected angle is visible in the story, not only written in the caption.",
+        "Mandatory shots, observable proof, and purchase CTA are all present.",
+    ]
+    talking_points = profile.get("approved_claims", [])
+    if is_aloe:
+        talking_points = [claim for claim in talking_points if "Aloe" in claim or "Vietnamese" in claim]
     brief = {
         "brief_id": brief_id,
         "brand": profile.get("brand", slug),
@@ -432,22 +518,25 @@ def generate_brief(slug: str, product: str, top_angles: int = 3) -> dict[str, An
         "status": "draft",
         "fixture_warning": dataset["is_fixture_only"],
         "objective": f"Create a giftable, credible short-form bodycare review for {product}.",
+        "greeting": "Hi lovely!",
+        "main_reference": main_reference,
+        "mandatory_reference": mandatory_reference,
+        "main_idea": main_idea,
+        "key_message": key_message,
+        "content_direction": content_direction,
+        "must_include": must_include,
+        "approval_gates": approval_gates,
         "audience": profile.get("audience", "Audience not supplied"),
         "single_minded_message": profile.get("positioning", "Positioning not supplied"),
-        "selected_angles": [item["angle"] for item in selected_angles],
+        "selected_angles": ([item["angle"] for item in selected_angles] if is_gift else
+                            ["Immediate cooling-and-soothing transformation", "Refill keeps the ritual going"]),
         "source_videos": sources,
         "hooks": hooks,
-        "structure_30s": [
-            "0–3s: Direct-to-camera gifting tension with the full set in frame.",
-            "3–8s: Name the recipient or occasion and why generic beauty gifts miss.",
-            "8–18s: Open the handwoven case with both hands; show the ritual sequence.",
-            "18–25s: Demonstrate one texture and give approved, observable proof.",
-            "25–30s: Return to the keepsake and close with a gift-or-keep CTA.",
-        ],
+        "structure_30s": structure,
         "tone": tone,
-        "talking_points": profile.get("approved_claims", []),
+        "talking_points": talking_points,
         "do_not_say": profile.get("prohibited_claims", []),
-        "cta_options": profile.get("cta_preferences", ["Learn more"]),
+        "cta_options": cta_options,
         "assumptions": ["No verbatim transcript was available; hooks are original adaptations.",
                         "All product claims require brand/legal review before publishing."],
     }
@@ -456,15 +545,21 @@ def generate_brief(slug: str, product: str, top_angles: int = 3) -> dict[str, An
     json_path = out_dir / f"{brief_id}.json"
     md_path = out_dir / f"{brief_id}.md"
     json_path.write_text(json.dumps(brief, ensure_ascii=False, indent=2), encoding="utf-8")
-    lines = [f"# {brief['brand']} — {product}", "", f"Generated: {brief['generated_at']}", ""]
+    lines = [brief["greeting"], "", f"For your **{brief['brand']} {product} video**, please follow this direction:", "",
+             f"**Main reference:** {brief['main_reference']}", "", "## Main idea", "", brief["main_idea"], "",
+             "## Content direction", ""] + [f"- {item}" for item in brief["content_direction"]]
+    if brief["mandatory_reference"]:
+        lines[5:5] = ["", f"**Mandatory visual reference:** {brief['mandatory_reference']}"]
     if brief["fixture_warning"]:
         lines += ["> Demo mode: source performance data is synthetic fixture data, not live trend evidence.", ""]
-    lines += ["## Objective", "", brief["objective"], "", "## Audience", "", brief["audience"], "",
-              "## Single-minded message", "", brief["single_minded_message"], "", "## Hooks", ""]
+    lines += ["", "## Must include", ""] + [f"- {item}" for item in brief["must_include"]]
+    lines += ["", "## Key message", "", brief["key_message"], "", "## CTA options", ""] + [f"- {item}" for item in brief["cta_options"]]
+    lines += ["", "## Hook options", ""]
     lines += [f"- {hook}" for hook in hooks]
     lines += ["", "## 30-second structure", ""] + [f"- {step}" for step in brief["structure_30s"]]
     lines += ["", "## Source references", ""] + [f"- [{s['creator']}]({s['url']}) — {s['angle']}. {s['relevance']}" for s in sources]
     lines += ["", "## Approved talking points", ""] + [f"- {claim}" for claim in brief["talking_points"]]
+    lines += ["", "## Approval gates", ""] + [f"- {item}" for item in brief["approval_gates"]]
     lines += ["", "## Do not say", ""] + [f"- {claim}" for claim in brief["do_not_say"]]
     lines += ["", "## Assumptions", ""] + [f"- {item}" for item in brief["assumptions"]]
     md_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
