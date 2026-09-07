@@ -17,7 +17,7 @@ from urllib.parse import urlsplit, urlunsplit
 from .store import ROOT, connect, log_run, rows
 
 
-VIDEO_RE = re.compile(r"^https://(?:www\.)?tiktok\.com/@[^/]+/video/(\d+)")
+VIDEO_RE = re.compile(r"^https://(?:www\.)?tiktok\.com/@[^/]+/(?:video|photo)/(\d+)")
 
 
 def now_iso() -> str:
@@ -28,7 +28,7 @@ def canonicalize_url(value: str) -> tuple[str, str]:
     value = value.strip()
     match = VIDEO_RE.match(value)
     if not match:
-        raise ValueError(f"Unsupported or malformed TikTok video URL: {value}")
+        raise ValueError(f"Unsupported or malformed TikTok post URL: {value}")
     parts = urlsplit(value)
     canonical = urlunsplit(("https", "www.tiktok.com", parts.path.rstrip("/"), "", ""))
     return canonical, match.group(1)
@@ -61,6 +61,11 @@ def normalize(raw: dict[str, Any], provider: str) -> dict[str, Any]:
         "category": raw.get("category") or "Uncategorized",
         "format": raw.get("format") or "Unclassified",
         "primary_angle": raw.get("primary_angle") or "Unclassified",
+        "q4_pillars": raw.get("q4_pillars") or "",
+        "gifting_keywords": raw.get("gifting_keywords") or "",
+        "product_focus": raw.get("product_focus") or "",
+        "occasion": raw.get("occasion") or "",
+        "brand_fit_notes": raw.get("brand_fit_notes") or "",
         "hook_summary": raw.get("hook_summary"),
         "proof_mechanism": raw.get("proof_mechanism"),
         "paid_partnership": _boolean(raw.get("paid_partnership")),
@@ -106,10 +111,11 @@ def discover(*, fixture: bool = False, csv_path: Path | None = None, observed_at
                 """INSERT INTO videos (
                 video_id, platform, canonical_url, creator_handle, creator_name,
                 creator_country, creator_country_evidence, language, caption,
-                published_at, category, format, primary_angle, hook_summary,
+                published_at, category, format, primary_angle, q4_pillars,
+                gifting_keywords, product_focus, occasion, brand_fit_notes, hook_summary,
                 proof_mechanism, paid_partnership, evidence_quality, source_provider,
                 is_fixture, collected_at, last_verified_at
-                ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
                 ON CONFLICT(video_id) DO UPDATE SET
                   canonical_url=excluded.canonical_url,
                   creator_handle=excluded.creator_handle,
@@ -122,6 +128,11 @@ def discover(*, fixture: bool = False, csv_path: Path | None = None, observed_at
                   category=excluded.category,
                   format=excluded.format,
                   primary_angle=excluded.primary_angle,
+                  q4_pillars=excluded.q4_pillars,
+                  gifting_keywords=excluded.gifting_keywords,
+                  product_focus=excluded.product_focus,
+                  occasion=excluded.occasion,
+                  brand_fit_notes=excluded.brand_fit_notes,
                   hook_summary=excluded.hook_summary,
                   proof_mechanism=excluded.proof_mechanism,
                   paid_partnership=excluded.paid_partnership,
@@ -133,7 +144,8 @@ def discover(*, fixture: bool = False, csv_path: Path | None = None, observed_at
                 tuple(item[key] for key in (
                     "video_id", "platform", "canonical_url", "creator_handle", "creator_name",
                     "creator_country", "creator_country_evidence", "language", "caption",
-                    "published_at", "category", "format", "primary_angle", "hook_summary",
+                    "published_at", "category", "format", "primary_angle", "q4_pillars",
+                    "gifting_keywords", "product_focus", "occasion", "brand_fit_notes", "hook_summary",
                     "proof_mechanism", "paid_partnership", "evidence_quality", "source_provider",
                     "is_fixture", "collected_at", "last_verified_at"
                 )),
@@ -170,11 +182,17 @@ def _recency(published_at: str | None) -> float:
     return max(0.0, 100.0 * math.exp(-days / 45.0))
 
 
-def score() -> list[dict[str, Any]]:
-    config = json.loads((ROOT / "config" / "skincare-us.json").read_text(encoding="utf-8"))
-    weights = config["scoring"]
+def _term_score(text: str, terms: list[str]) -> float:
+    lowered = text.lower()
+    matches = sum(1 for term in terms if term.lower() in lowered)
+    return min(100.0, matches / max(1, min(4, len(terms))) * 100.0)
+
+
+def score(config_name: str = "cobas-daughter-bodycare-q4") -> list[dict[str, Any]]:
+    config = json.loads((ROOT / "config" / f"{config_name}.json").read_text(encoding="utf-8"))
+    weights = config["opportunity_scoring"]
     conn = connect()
-    videos = rows(conn, "SELECT * FROM videos")
+    videos = rows(conn, "SELECT * FROM videos WHERE lower(category) LIKE ?", (f"%{config['category'].lower()}%",))
     angle_counts = Counter(video["primary_angle"] for video in videos)
     calculated_at = now_iso()
     scored: list[dict[str, Any]] = []
@@ -198,13 +216,40 @@ def score() -> list[dict[str, Any]]:
             engagement = _log_score(interactions, 5.0)
 
         relevant = 0
-        relevant += 35 if str(video["category"]).lower() == config["category"].lower() else 0
+        relevant += 35 if config["category"].lower() in str(video["category"]).lower() else 0
         relevant += 25 if video["creator_country"] == config["market"] else 0
         relevant += 15 if video["language"] == config["language"] else 0
         relevant += 25 if video["format"] in config["formats"] else 0
         novelty = 100.0 / max(1, angle_counts[video["primary_angle"]])
         evidence_map = {"high": 100.0, "medium": 70.0, "low": 35.0, "fixture": 15.0}
         evidence = evidence_map.get(video["evidence_quality"], 20.0)
+        text = " ".join(str(video.get(field) or "") for field in (
+            "caption", "primary_angle", "hook_summary", "proof_mechanism", "q4_pillars",
+            "gifting_keywords", "product_focus", "occasion", "brand_fit_notes"
+        ))
+        brand_fit = (
+            (25.0 if "bodycare" in str(video["category"]).lower() or "body care" in text.lower() else 0.0)
+            + _term_score(text, config["brand_fit_terms"]["ritual"]) * 0.20
+            + _term_score(text, config["brand_fit_terms"]["sensory_luxury"]) * 0.20
+            + _term_score(text, config["brand_fit_terms"]["gift_object"]) * 0.20
+            + _term_score(text, config["brand_fit_terms"]["product_match"]) * 0.15
+        )
+        brand_fit = min(100.0, brand_fit)
+        gifting = min(100.0,
+            _term_score(text, config["gifting_terms"]) * 0.70
+            + (20.0 if video.get("occasion") else 0.0)
+            + (10.0 if any(term in text.lower() for term in ("set", "bundle", "gift box", "unboxing")) else 0.0)
+        )
+        q4 = min(100.0,
+            _term_score(str(video.get("q4_pillars") or ""), config["q4_pillars"]) * 0.50
+            + _term_score(text, config["q4_terms"]) * 0.30
+            + (10.0 if video.get("occasion") else 0.0)
+            + _recency(video["published_at"]) * 0.10
+        )
+        momentum = (
+            velocity * 0.30 + engagement * 0.30 + _recency(video["published_at"]) * 0.25
+            + novelty * 0.15
+        )
         components = {
             "velocity_score": round(velocity, 2),
             "engagement_score": round(engagement, 2),
@@ -212,17 +257,27 @@ def score() -> list[dict[str, Any]]:
             "relevance_score": round(float(relevant), 2),
             "novelty_score": round(novelty, 2),
             "evidence_score": round(evidence, 2),
+            "momentum_score": round(momentum, 2),
+            "brand_fit_score": round(brand_fit, 2),
+            "q4_potential_score": round(q4, 2),
+            "gifting_relevance_score": round(gifting, 2),
         }
         total = sum(components[f"{name}_score"] * weight for name, weight in weights.items())
-        explanation = f"Velocity {velocity_status}; evidence {video['evidence_quality']}; relevance {relevant}/100."
+        explanation = (
+            f"Brand fit {brand_fit:.0f}/100; Q4 {q4:.0f}/100; gifting {gifting:.0f}/100; "
+            f"momentum {momentum:.0f}/100. Velocity {velocity_status}; evidence {video['evidence_quality']}."
+        )
         conn.execute(
             """INSERT OR REPLACE INTO trend_scores
             (video_id, calculated_at, trend_score, velocity_score, velocity_status,
              engagement_score, recency_score, relevance_score, novelty_score,
-             evidence_score, explanation) VALUES (?,?,?,?,?,?,?,?,?,?,?)""",
+             evidence_score, momentum_score, brand_fit_score, q4_potential_score,
+             gifting_relevance_score, explanation) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
             (video["video_id"], calculated_at, round(total, 2), components["velocity_score"], velocity_status,
              components["engagement_score"], components["recency_score"], components["relevance_score"],
-             components["novelty_score"], components["evidence_score"], explanation),
+             components["novelty_score"], components["evidence_score"], components["momentum_score"],
+             components["brand_fit_score"], components["q4_potential_score"],
+             components["gifting_relevance_score"], explanation),
         )
         scored.append({**video, **latest, **components, "trend_score": round(total, 2), "velocity_status": velocity_status, "explanation": explanation})
     conn.commit()
@@ -250,6 +305,9 @@ def build_dataset() -> dict[str, Any]:
             "median_score": round(median, 2),
             "max_score": max(values),
             "representative_url": items[0]["canonical_url"],
+            "median_brand_fit": round(sum(item["brand_fit_score"] for item in items) / len(items), 2),
+            "median_q4_potential": round(sum(item["q4_potential_score"] for item in items) / len(items), 2),
+            "median_gifting_relevance": round(sum(item["gifting_relevance_score"] for item in items) / len(items), 2),
         })
     angles.sort(key=lambda item: item["max_score"], reverse=True)
     return {
@@ -312,9 +370,9 @@ def generate_brief(slug: str, product: str, top_angles: int = 3) -> dict[str, An
     brief_id = f"{slug}-{datetime.now().strftime('%Y%m%d-%H%M%S')}"
     tone = ", ".join(profile.get("tone", ["clear", "credible"]))
     hooks = [
-        f"I tried {product} the way I wish someone had explained it to me.",
-        f"If your skin barrier feels stressed, here is what {product} can—and cannot—do.",
-        f"Before you add another serum to your routine, watch this.",
+        f"What do you give the woman who already has everything? A body-care ritual she will actually keep.",
+        f"This is the rare {product} that feels as considered as the person receiving it.",
+        f"I almost kept this gift for myself—and the handwoven case is why.",
     ]
     sources = [{"url": item["canonical_url"], "creator": item["creator_name"], "angle": item["primary_angle"],
                 "relevance": f"Uses {item['format']} with {item['proof_mechanism'] or 'observable product evidence'}."} for item in selected_videos]
@@ -325,18 +383,18 @@ def generate_brief(slug: str, product: str, top_angles: int = 3) -> dict[str, An
         "generated_at": now_iso(),
         "status": "draft",
         "fixture_warning": dataset["is_fixture_only"],
-        "objective": f"Create a credible short-form product review for {product}.",
+        "objective": f"Create a giftable, credible short-form bodycare review for {product}.",
         "audience": profile.get("audience", "Audience not supplied"),
         "single_minded_message": profile.get("positioning", "Positioning not supplied"),
         "selected_angles": [item["angle"] for item in selected_angles],
         "source_videos": sources,
         "hooks": hooks,
         "structure_30s": [
-            "0–3s: Direct-to-camera hook and product in frame.",
-            "3–9s: Name the skin tension and who this is for.",
-            "9–20s: Demonstrate texture/application and give two approved proof points.",
-            "20–26s: State one limitation or who should skip it.",
-            "26–30s: Low-pressure CTA.",
+            "0–3s: Direct-to-camera gifting tension with the full set in frame.",
+            "3–8s: Name the recipient or occasion and why generic beauty gifts miss.",
+            "8–18s: Open the handwoven case with both hands; show the ritual sequence.",
+            "18–25s: Demonstrate one texture and give approved, observable proof.",
+            "25–30s: Return to the keepsake and close with a gift-or-keep CTA.",
         ],
         "tone": tone,
         "talking_points": profile.get("approved_claims", []),
@@ -461,8 +519,8 @@ def export_excel() -> Path:
 
 def daily(fixture: bool, live: bool = False) -> dict[str, Any]:
     discovery = discover(fixture=fixture, live=live)
-    ingest_brand("demo-skincare")
-    brief = generate_brief("demo-skincare", "Barrier Serum")
+    ingest_brand("cobas-daughter")
+    brief = generate_brief("cobas-daughter", "Bath & Body Care Gift Set")
     site = export_site()
     workbook = export_excel()
     result = {"discovery": discovery, "brief_id": brief["brief_id"], "site": str(site), "workbook": str(workbook)}

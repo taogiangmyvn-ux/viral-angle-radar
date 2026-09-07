@@ -1,11 +1,11 @@
-# Viral Angle Radar
+# CoBa's Daughter Opportunity Radar
 
-Daily trend intelligence for short-form creative teams. The MVP collects verified source links, stores metric snapshots, scores rising angles, matches them to brand context, generates quick briefs, publishes a static dashboard, and exports Excel.
+Daily US TikTok intelligence for CoBa's Daughter bodycare and Q4 gifting. The tool collects source links, stores metric snapshots, scores opportunities against the brand book and Q4 priorities, generates quick briefs, publishes a static dashboard, and exports Excel.
 
 ## Quick start
 
 ```bash
-python3 -m viral_radar daily --fixture
+python3 -m viral_radar daily
 python3 -m http.server 8080 --directory site
 ```
 
@@ -17,8 +17,8 @@ Open `http://localhost:8080`.
 python3 -m viral_radar discover --fixture
 python3 -m viral_radar discover --csv data/manual_sources.csv
 python3 -m viral_radar score
-python3 -m viral_radar ingest-brand --brand demo-skincare
-python3 -m viral_radar brief --brand demo-skincare --product "Barrier Serum"
+python3 -m viral_radar ingest-brand --brand cobas-daughter
+python3 -m viral_radar brief --brand cobas-daughter --product "Bath & Body Care Gift Set"
 python3 -m viral_radar export-site
 python3 -m viral_radar export-excel
 python3 -m viral_radar daily --fixture
@@ -42,16 +42,17 @@ Run `python3 -m viral_radar ingest-brand --brand <slug>`. PDF and DOCX extractio
 
 ## Scoring
 
-The 0–100 score is auditable:
+The 0–100 opportunity score is auditable:
 
-- 30% metric velocity
-- 20% engagement quality
-- 15% recency
-- 20% category/market/format relevance
-- 10% angle novelty
+- 25% trend momentum (velocity, engagement, recency and novelty)
+- 30% CoBa's Daughter brand fit
+- 25% Q4 potential
+- 15% gifting keyword relevance
 - 5% evidence quality
 
-With only one snapshot, velocity is marked `insufficient_history` and receives a conservative provisional value.
+Brand fit checks bodycare ritual, sensorial luxury, gift-object value and product match. Q4 checks the four planning pillars—Gift Guide, Aesop Alternative, Keepsake and Occasion—plus seasonal intent. With only one snapshot, velocity is marked `insufficient_history` and remains conservative.
+
+The public dashboard intentionally excludes internal revenue, AOV and channel-performance figures from the supplied Q4 plan.
 
 ## GitHub Pages and daily update
 
@@ -83,4 +84,3 @@ flowchart LR
 - Caption evidence is not treated as a verbatim spoken transcript.
 - Creator location must be supported by profile/provider evidence; accent or appearance is not evidence.
 - The deterministic brief generator works offline. An optional LLM adapter can be added without changing stored schemas.
-

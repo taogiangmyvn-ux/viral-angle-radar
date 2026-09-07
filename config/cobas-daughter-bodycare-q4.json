@@ -1,0 +1,22 @@
+{
+  "market": "United States",
+  "language": "English",
+  "category": "bodycare",
+  "formats": ["talking head", "expert review", "UGC review", "ranking", "gift guide", "unboxing", "routine demo", "comparison"],
+  "q4_pillars": ["Gift Guide", "Aesop Alternative", "Keepsake", "Occasion"],
+  "brand_fit_terms": {
+    "ritual": ["ritual", "routine", "unwind", "reset", "recover", "self-care"],
+    "sensory_luxury": ["luxury", "sensory", "scent", "texture", "spa", "calming", "nourishing"],
+    "gift_object": ["gift", "keepsake", "packaging", "case", "basket", "beautiful", "display"],
+    "product_match": ["body wash", "body scrub", "exfoliator", "aloe", "soothing gel", "body oil", "body butter", "gift set"]
+  },
+  "gifting_terms": ["gift guide", "gift for her", "holiday gift", "hostess", "housewarming", "women who have everything", "under $100", "ready to gift", "treat yourself", "gift set", "Christmas", "Thanksgiving", "Secret Santa"],
+  "q4_terms": ["holiday", "Christmas", "Thanksgiving", "hostess", "Black Friday", "Cyber Monday", "winter", "gift guide", "under $100", "limited edition", "party", "house guest"],
+  "opportunity_scoring": {
+    "momentum": 0.25,
+    "brand_fit": 0.30,
+    "q4_potential": 0.25,
+    "gifting_relevance": 0.15,
+    "evidence": 0.05
+  }
+}

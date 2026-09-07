@@ -1,0 +1,38 @@
+{
+  "brand": "CoBa's Daughter",
+  "category": "Bodycare",
+  "market": "United States",
+  "positioning": "A low-maintenance body care ritual rooted in Vietnamese heritage, pairing sensorial efficacy with objects made to be given, lived with and kept.",
+  "audience": "Women with discerning taste who value effective body care, considered gifting, beautiful homes and rituals that fit real life.",
+  "tone": ["warm", "refined", "sensory", "specific", "natural American English"],
+  "ritual_states": ["Unwind", "Reset", "Recover"],
+  "products": [
+    "3-in-1 Soap for Body, Hand & Bubble Bath",
+    "Robusta Coffee Body Exfoliator",
+    "Aloe Soothing Gel",
+    "Exfoliate & Nourish Body Care Set",
+    "Bath & Body Care Gift Set",
+    "Scrub & Soothe Body Care Gift Set"
+  ],
+  "approved_claims": [
+    "The 3-in-1 Soap cleanses body, hands and bath in one ritual.",
+    "The Robusta Coffee Body Exfoliator provides physical exfoliation with finely milled coffee grounds.",
+    "The Aloe Soothing Gel offers lightweight hydration and a cooling sensory experience.",
+    "Selected gift sets are housed in handwoven rattan or water-hyacinth packaging designed to be kept and reused.",
+    "The formulas and visual world draw from Vietnamese ingredients, craft and heritage."
+  ],
+  "prohibited_claims": [
+    "Do not promise cures, permanent results or medical outcomes.",
+    "Do not use sustainability claims beyond specific, supportable packaging facts.",
+    "Do not invent clinical statistics or dermatologist endorsements.",
+    "Do not flatten Vietnamese heritage into generic tropical or exotic language."
+  ],
+  "cta_preferences": ["Give the ritual", "Choose the set for her", "Keep one, gift one"],
+  "q4_campaign": {
+    "idea": "Given With Both Hands",
+    "message": "A ritual to give. A keepsake to remember.",
+    "pillars": ["Gift Guide", "Aesop Alternative", "Keepsake", "Occasion"],
+    "iconic_assets": ["Handwoven packaging shown in use", "A two-hand gifting gesture between two people"]
+  },
+  "privacy_note": "Public outputs exclude internal revenue, AOV and channel-performance figures from the Q4 planning document."
+}

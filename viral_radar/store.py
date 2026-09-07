@@ -25,6 +25,11 @@ CREATE TABLE IF NOT EXISTS videos (
   category TEXT,
   format TEXT,
   primary_angle TEXT,
+  q4_pillars TEXT,
+  gifting_keywords TEXT,
+  product_focus TEXT,
+  occasion TEXT,
+  brand_fit_notes TEXT,
   hook_summary TEXT,
   proof_mechanism TEXT,
   paid_partnership INTEGER NOT NULL DEFAULT 0,
@@ -61,6 +66,10 @@ CREATE TABLE IF NOT EXISTS trend_scores (
   relevance_score REAL,
   novelty_score REAL,
   evidence_score REAL,
+  momentum_score REAL,
+  brand_fit_score REAL,
+  q4_potential_score REAL,
+  gifting_relevance_score REAL,
   explanation TEXT,
   FOREIGN KEY(video_id) REFERENCES videos(video_id)
 );
@@ -84,6 +93,23 @@ def connect() -> sqlite3.Connection:
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON")
     conn.executescript(SCHEMA)
+    video_columns = {
+        "q4_pillars": "TEXT", "gifting_keywords": "TEXT", "product_focus": "TEXT",
+        "occasion": "TEXT", "brand_fit_notes": "TEXT",
+    }
+    score_columns = {
+        "momentum_score": "REAL", "brand_fit_score": "REAL",
+        "q4_potential_score": "REAL", "gifting_relevance_score": "REAL",
+    }
+    existing_videos = {row[1] for row in conn.execute("PRAGMA table_info(videos)")}
+    existing_scores = {row[1] for row in conn.execute("PRAGMA table_info(trend_scores)")}
+    for name, field_type in video_columns.items():
+        if name not in existing_videos:
+            conn.execute(f"ALTER TABLE videos ADD COLUMN {name} {field_type}")
+    for name, field_type in score_columns.items():
+        if name not in existing_scores:
+            conn.execute(f"ALTER TABLE trend_scores ADD COLUMN {name} {field_type}")
+    conn.commit()
     return conn
 
 
@@ -96,4 +122,3 @@ def log_run(event: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("a", encoding="utf-8") as handle:
         handle.write(json.dumps(event, ensure_ascii=False) + "\n")
-
