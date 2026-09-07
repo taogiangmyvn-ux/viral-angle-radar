@@ -6,6 +6,10 @@ The shared dashboard also includes an evergreen **Routine Integration** lane and
 
 The Brief Builder includes three distinct Q4 products: the Exfoliate & Nourish 3-Piece Set, the Scrub & Soothe 7-Piece Set, and the Bath & Body 7-Piece Gift Basket. Each selection carries its own official product link, contents, packaging proof and creator direction.
 
+Briefs are planned by **month × pillar × product × content owner**. September stays shallow on gifting; October opens hostess and gift-section language; November introduces truthful promotion and volume behavior; December peaks on Secret Santa, White Elephant and the confirmed December 18 shipping cutoff. The builder prevents scent-dupe comparisons with Aesop, fake urgency and unconfirmed bundle names or prices. Owner constraints are explicit: Arie uses TikTok Shop QA gates, Louie receives the deepest test briefs, Kimie cannot be assigned physical-product proof, and the intern stream is capped until the role is filled.
+
+The monthly viral-potential index is transparent: 45% planned monthly weight, 25% seasonal fit, 20% observed reference strength and 10% quarter trajectory. It ranks what to test; it is not a forecast of views or sales.
+
 Each strategic angle has its own viral creative playbook: psychological engine, recommended TikTok-native format, first frame, story beats, edit rhythm and hooks. The dashboard also carries a dated US sound snapshot in `data/trending_sounds.json`. Sound suggestions are inspiration, not a promise of virality; branded and paid content must verify availability and commercial usage rights on the posting date.
 
 ## Trend alerts and Slack

@@ -3,7 +3,7 @@ import unittest
 from pathlib import Path
 
 from viral_radar.alerts import detect_format_changes
-from viral_radar.pipeline import canonicalize_url, normalize, score_creator_candidate, viral_tier
+from viral_radar.pipeline import build_monthly_strategy, canonicalize_url, normalize, score_creator_candidate, viral_tier
 
 
 class PipelineTests(unittest.TestCase):
@@ -63,6 +63,24 @@ class PipelineTests(unittest.TestCase):
         ]}
         report = detect_format_changes(dataset, {"formats": {}, "shortlist_creators": []})
         self.assertEqual([a["format"] for a in report["alerts"]], ["@ready"])
+
+    def test_monthly_strategy_preserves_occasion_growth(self):
+        plan = {"months": {m: {"seasonal_fit": {"occasions": score}} for m, score in zip(("sep", "oct", "nov", "dec"), (10, 65, 95, 100))},
+                "pillars": [{"id": "occasions", "name": "The Occasions", "monthly": {"sep": 2, "oct": 8, "nov": 22, "dec": 29}, "evidence_tier": 75, "reference_urls": []}],
+                "streams": []}
+        result = build_monthly_strategy(plan, [], [])
+        pillar = result["pillars"][0]
+        self.assertEqual([pillar["monthly_potential"][m]["planned_posts"] for m in result["month_order"]], [2, 8, 22, 29])
+        self.assertLess(pillar["monthly_potential"]["sep"]["score"], pillar["monthly_potential"]["dec"]["score"])
+
+    def test_monthly_priority_shift_alerts(self):
+        dataset = {"generated_at": "2026-09-07T00:00:00Z", "viral_videos": [], "creator_candidates": [],
+                   "monthly_strategy": {"month_order": ["nov"], "pillars": [
+                       {"name": "The Occasions", "monthly_potential": {"nov": {"score": 82}}}
+                   ]}}
+        previous = {"formats": {}, "shortlist_creators": [], "monthly_priorities": {"nov": {"pillar": "The Gift Guide", "score": 70}}}
+        report = detect_format_changes(dataset, previous)
+        self.assertEqual(report["alerts"][0]["level"], "monthly_shift")
 
 
 if __name__ == "__main__":

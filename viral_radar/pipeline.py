@@ -366,6 +366,9 @@ def build_dataset() -> dict[str, Any]:
     creator_source = json.loads(creator_path.read_text(encoding="utf-8")) if creator_path.exists() else {"candidates": []}
     creator_candidates = [score_creator_candidate(item) for item in creator_source.get("candidates", [])]
     creator_candidates.sort(key=lambda item: item["shortlist_score"], reverse=True)
+    monthly_path = ROOT / "data" / "monthly_content_plan.json"
+    monthly_source = json.loads(monthly_path.read_text(encoding="utf-8")) if monthly_path.exists() else {"pillars": [], "months": {}, "streams": []}
+    monthly_strategy = build_monthly_strategy(monthly_source, viral_videos, routine_references.get("references", []))
     latest_alert = json.loads(ALERT_PATH.read_text(encoding="utf-8")) if ALERT_PATH.exists() else None
     return {
         "generated_at": now_iso(),
@@ -385,6 +388,7 @@ def build_dataset() -> dict[str, Any]:
             "budget": "Likelihood under $200 is an unconfirmed planning estimate until a quote is received.",
             "shortlist": "Only verified-US candidates with 3+ audited posts and score >=70 qualify for proactive alerts."
         },
+        "monthly_strategy": monthly_strategy,
         "latest_trend_alert": latest_alert,
         "viral_rule": {"minimum_likes": 10000, "minimum_views": 1000000,
                        "definition": "Qualified when likes >= 10,000 OR views >= 1,000,000"},
@@ -418,6 +422,55 @@ def score_creator_candidate(item: dict[str, Any]) -> dict[str, Any]:
             "format_fit_score": round(format_fit), "us_fit_score": round(us_fit),
             "evidence_confidence_score": round(confidence), "shortlist_score": round(score),
             "shortlist_status": status}
+
+
+def build_monthly_strategy(plan: dict[str, Any], viral_videos: list[dict[str, Any]], routine_refs: list[dict[str, Any]]) -> dict[str, Any]:
+    by_url = {item.get("canonical_url"): item for item in viral_videos}
+    by_url.update({item.get("url"): item for item in routine_refs})
+    month_order = [key for key in ("sep", "oct", "nov", "dec") if key in plan.get("months", {})]
+    monthly_max = {month: max((pillar.get("monthly", {}).get(month, 0) for pillar in plan.get("pillars", [])), default=1) for month in month_order}
+    pillars = []
+    for pillar in plan.get("pillars", []):
+        potential = {}
+        previous = None
+        refs = []
+        observed_evidence = []
+        for url in pillar.get("reference_urls", []):
+            source = by_url.get(url, {})
+            refs.append({"url": url, "creator": source.get("creator_name") or source.get("creator_handle") or "Reference",
+                         "likes": source.get("likes") if "likes" in source else source.get("observed_likes"),
+                         "viral_tier": source.get("viral_tier") or source.get("evidence_role") or "Reference",
+                         "execution": source.get("format") or source.get("execution")})
+            tier = source.get("viral_tier")
+            if tier:
+                observed_evidence.append({"Mega": 100, "Breakout": 85, "Qualified": 65, "Watchlist": 30}.get(tier, 30))
+            elif (source.get("observed_likes") or 0) >= 10_000:
+                observed_evidence.append(65)
+            elif source:
+                observed_evidence.append(30)
+        monthly_refs = {}
+        for month, urls in pillar.get("monthly_reference_urls", {}).items():
+            monthly_refs[month] = [next((ref for ref in refs if ref["url"] == url), {"url": url, "creator": "Reference", "likes": None, "viral_tier": "Unverified", "execution": None}) for url in urls]
+        for month in month_order:
+            count = pillar.get("monthly", {}).get(month, 0)
+            allocation = count / max(1, monthly_max[month]) * 100
+            seasonal = plan["months"][month].get("seasonal_fit", {}).get(pillar["id"], 0)
+            evidence = max(observed_evidence, default=pillar.get("evidence_tier", 50))
+            if previous is None:
+                trajectory = 50
+            elif count > previous:
+                trajectory = min(100, 60 + (count - previous) * 5)
+            elif count == previous:
+                trajectory = 50
+            else:
+                trajectory = 25
+            score = allocation * 0.45 + seasonal * 0.25 + evidence * 0.20 + trajectory * 0.10
+            potential[month] = {"score": round(score), "planned_posts": count, "allocation_score": round(allocation),
+                                "seasonal_fit_score": seasonal, "evidence_score": evidence, "trajectory_score": trajectory}
+            previous = count
+        pillars.append({**pillar, "monthly_potential": potential, "references": refs, "monthly_references": monthly_refs})
+    return {**plan, "month_order": month_order, "pillars": pillars,
+            "potential_method": "45% planned monthly weight + 25% seasonal fit + 20% observed reference strength + 10% quarter trajectory. This is a prioritization index, not a performance forecast."}
 
 
 def ingest_brand(slug: str) -> dict[str, Any]:

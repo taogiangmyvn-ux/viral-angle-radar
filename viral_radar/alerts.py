@@ -31,8 +31,20 @@ def _summaries(dataset: dict[str, Any]) -> dict[str, dict[str, Any]]:
     return result
 
 
+def _monthly_priorities(dataset: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    strategy = dataset.get("monthly_strategy", {})
+    priorities = {}
+    for month in strategy.get("month_order", []):
+        ranked = sorted(strategy.get("pillars", []), key=lambda p: p.get("monthly_potential", {}).get(month, {}).get("score", 0), reverse=True)
+        if ranked:
+            top = ranked[0]
+            priorities[month] = {"pillar": top.get("name"), "score": top.get("monthly_potential", {}).get(month, {}).get("score", 0)}
+    return priorities
+
+
 def detect_format_changes(dataset: dict[str, Any], previous: dict[str, Any] | None) -> dict[str, Any]:
     current = _summaries(dataset)
+    monthly = _monthly_priorities(dataset)
     alerts = []
     if previous:
         old_formats = previous.get("formats", {})
@@ -51,17 +63,23 @@ def detect_format_changes(dataset: dict[str, Any], previous: dict[str, Any] | No
         for creator in dataset.get("creator_candidates", []):
             if creator.get("shortlist_status") == "Shortlist ready" and creator.get("handle") not in old_creators:
                 alerts.append({"level": "new_creator", "format": creator.get("handle"), "reason": f"Verified-US micro creator reached shortlist score {creator.get('shortlist_score')} with 3+ audited posts; rate remains unconfirmed."})
+        for month, priority in monthly.items():
+            old = previous.get("monthly_priorities", {}).get(month, {})
+            if old and (old.get("pillar") != priority.get("pillar") or abs(old.get("score", 0) - priority.get("score", 0)) >= 10):
+                alerts.append({"level": "monthly_shift", "format": month.title(), "reason": f"Top monthly priority changed from {old.get('pillar')} ({old.get('score')}) to {priority.get('pillar')} ({priority.get('score')})."})
     return {
         "generated_at": dataset.get("generated_at"),
         "status": "material_change" if alerts else ("baseline_created" if previous is None else "no_material_change"),
         "alerts": alerts,
         "formats": current,
         "shortlist_creators": sorted(item.get("handle") for item in dataset.get("creator_candidates", []) if item.get("shortlist_status") == "Shortlist ready"),
+        "monthly_priorities": monthly,
         "rules": {
             "new_format": "At least 2 viral-qualified posts from at least 2 creators and absent from the prior snapshot.",
             "accelerating": "At least 2 additional viral-qualified examples from at least 2 creators since the prior snapshot.",
             "breakout": "A format source newly crosses 100K likes or 3M views.",
-            "mega": "A format source newly crosses 1M likes."
+            "mega": "A format source newly crosses 1M likes.",
+            "monthly_shift": "The top monthly pillar changes or its potential index moves by at least 10 points."
         },
     }
 
@@ -93,6 +111,6 @@ def run_alert_cycle(dataset: dict[str, Any]) -> dict[str, Any]:
         report["slack"] = {"configured": True, "sent": False, "reason": f"Slack delivery failed: {exc}"}
     BASELINE_PATH.parent.mkdir(parents=True, exist_ok=True)
     ALERT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    BASELINE_PATH.write_text(json.dumps({"generated_at": report["generated_at"], "formats": report["formats"], "shortlist_creators": report["shortlist_creators"]}, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    BASELINE_PATH.write_text(json.dumps({"generated_at": report["generated_at"], "formats": report["formats"], "shortlist_creators": report["shortlist_creators"], "monthly_priorities": report["monthly_priorities"]}, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     ALERT_PATH.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return report
