@@ -13,3 +13,4 @@ work/
 site/assets/
 site/data.json
 outputs/*.inspect.ndjson
+brands/*/extracted_context.json
