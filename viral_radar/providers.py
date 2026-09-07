@@ -11,7 +11,7 @@ from typing import Any
 from urllib.request import Request, urlopen
 
 
-def fetch_live() -> list[dict[str, Any]]:
+def fetch_http_provider() -> list[dict[str, Any]]:
     endpoint = os.environ.get("LIVE_PROVIDER_URL")
     token = os.environ.get("LIVE_PROVIDER_TOKEN")
     if not endpoint:
@@ -27,3 +27,11 @@ def fetch_live() -> list[dict[str, Any]]:
         raise RuntimeError("Live provider response must be a list or contain an items list")
     return items
 
+
+def fetch_provider(*, scout: bool = False) -> tuple[str, list[dict[str, Any]], dict[str, Any] | None]:
+    """Select a credentialed provider and return its provenance with the rows."""
+    if scout:
+        from .scout import scout_tiktok
+        items, status = scout_tiktok()
+        return "apify_tiktok_scout", items, status
+    return "live_http_provider", fetch_http_provider(), None

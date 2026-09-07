@@ -13,6 +13,7 @@ def parser() -> argparse.ArgumentParser:
     discover_cmd = commands.add_parser("discover")
     discover_cmd.add_argument("--fixture", action="store_true")
     discover_cmd.add_argument("--live", action="store_true")
+    discover_cmd.add_argument("--scout", action="store_true")
     discover_cmd.add_argument("--csv", type=Path)
     discover_cmd.add_argument("--observed-at")
     commands.add_parser("score")
@@ -27,13 +28,14 @@ def parser() -> argparse.ArgumentParser:
     daily_cmd = commands.add_parser("daily")
     daily_cmd.add_argument("--fixture", action="store_true")
     daily_cmd.add_argument("--live", action="store_true")
+    daily_cmd.add_argument("--scout", action="store_true")
     return root
 
 
 def main() -> None:
     args = parser().parse_args()
     if args.command == "discover":
-        result = discover(fixture=args.fixture, csv_path=args.csv, observed_at=args.observed_at, live=args.live)
+        result = discover(fixture=args.fixture, csv_path=args.csv, observed_at=args.observed_at, live=args.live, scout=args.scout)
     elif args.command == "score":
         result = score()
     elif args.command == "ingest-brand":
@@ -45,7 +47,7 @@ def main() -> None:
     elif args.command == "export-excel":
         result = {"workbook": str(export_excel())}
     else:
-        result = daily(args.fixture, args.live)
+        result = daily(args.fixture, args.live, args.scout)
     print(json.dumps(result, ensure_ascii=False, indent=2, default=str))
 
 

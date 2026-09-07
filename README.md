@@ -44,9 +44,23 @@ python3 -m viral_radar export-excel
 python3 -m viral_radar daily --fixture
 ```
 
+## Continuous scout
+
+The scheduled workflow runs every six hours. With `APIFY_TOKEN` configured, it:
+
+1. Searches a rotating, month-aware US bodycare and gifting query set.
+2. Normalizes and deduplicates public TikTok posts.
+3. Expands up to 20 promising micro-creator profiles and audits their eight most recent non-pinned posts.
+4. Preserves metric snapshots for velocity, applies the hard viral gate, and refreshes the creator shortlist.
+5. Rebuilds the dashboard and Excel, then sends Slack only for material changes.
+
+Create an Apify account, enable the maintained `clockworks/tiktok-scraper` actor, and add its token as the repository secret `APIFY_TOKEN`. The default scan is deliberately capped (about 280 maximum returned items per run before deduplication) to control provider cost. Override `APIFY_ACTOR_ID` with a repository variable or `SCOUT_RESULTS_PER_QUERY` in the workflow only after reviewing provider pricing.
+
+The Creator Discovery page reports one of three honest states: live, provider error with stale evidence preserved, or not connected. A Pages timestamp alone is never presented as proof that scouting occurred.
+
 ## Live data
 
-The repository deliberately does not bypass TikTok login, CAPTCHA, rate limits, or access controls. Add a legitimate provider in `viral_radar/providers.py` and configure its credentials through GitHub Actions secrets. Manual research can be imported with `data/manual_sources.csv`.
+The repository deliberately does not bypass TikTok login, CAPTCHA, rate limits, or access controls. The built-in scout uses Apify's credentialed Actor API. A different legitimate provider can be connected through `LIVE_PROVIDER_URL`; manual research can be imported with `data/manual_sources.csv`.
 
 Every row records its provider, collection time, evidence status, and original URL. Missing metrics remain blank. Fixture records are visibly labeled and cannot be treated as live evidence.
 
@@ -101,7 +115,7 @@ The public dashboard intentionally excludes internal revenue, AOV and channel-pe
 3. Run the **Daily Viral Angle Radar** workflow manually once.
 4. Add provider/API secrets only when a legitimate provider is ready.
 
-The workflow runs daily at 01:15 UTC, uploads the Excel workbook, and deploys `site/` to GitHub Pages. Change the cron in `.github/workflows/daily-update.yml` if needed.
+The workflow runs every six hours, uploads the Excel workbook, and deploys `site/` to GitHub Pages. Change the cron in `.github/workflows/daily-update.yml` if needed.
 
 ## Architecture
 

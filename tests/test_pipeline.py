@@ -4,6 +4,7 @@ from pathlib import Path
 
 from viral_radar.alerts import detect_format_changes
 from viral_radar.pipeline import build_monthly_strategy, canonicalize_url, normalize, score_creator_candidate, viral_tier
+from viral_radar.scout import adapt_post, build_creator_candidates, build_sound_snapshot
 
 
 class PipelineTests(unittest.TestCase):
@@ -29,6 +30,46 @@ class PipelineTests(unittest.TestCase):
     def test_viral_tiers(self):
         self.assertEqual(viral_tier(None, 100_000), "Breakout")
         self.assertEqual(viral_tier(None, 1_000_000), "Mega")
+
+    def test_apify_post_adapter_preserves_real_metrics(self):
+        post = adapt_post({
+            "id": "777", "text": "my honest review of this body care routine #bodycare",
+            "createTime": 1_725_000_000, "playCount": 1_200_000, "diggCount": 42_000,
+            "commentCount": 410, "shareCount": 900,
+            "authorMeta": {"name": "smallcreator", "nickName": "Small Creator", "fans": 18_000, "region": "US"}
+        })
+        self.assertEqual(post["canonical_url"], "https://www.tiktok.com/@smallcreator/video/777")
+        self.assertEqual(post["creator_country"], "United States")
+        self.assertEqual(post["views"], 1_200_000)
+        self.assertEqual(post["primary_angle"], "Earn the right to recommend it as a gift")
+
+    def test_apify_flattened_output_fields_are_supported(self):
+        post = adapt_post({"id": "778", "text": "post shower body care", "playCount": 9000,
+                           "authorMeta.name": "flatcreator", "authorMeta.fans": 7000,
+                           "authorMeta.region": "US", "textLanguage": "en"})
+        self.assertEqual(post["creator_handle"], "@flatcreator")
+        self.assertEqual(post["followers"], 7000)
+        self.assertEqual(post["language"], "English")
+
+    def test_creator_scout_requires_three_distinct_posts(self):
+        raw = [{"id": str(i), "text": "body care routine", "playCount": 100_000 * i,
+                "diggCount": 2_000 * i, "authorMeta": {"name": "micro", "fans": 12_000, "region": "US"}}
+               for i in range(1, 4)]
+        candidates = build_creator_candidates(raw)
+        self.assertEqual(candidates[0]["audited_post_count"], 3)
+        self.assertEqual(candidates[0]["country"], "United States")
+
+    def test_sound_signal_requires_cross_creator_replication(self):
+        rows = [
+            {"id": "1", "text": "body care routine", "authorMeta": {"name": "a"},
+             "musicMeta": {"musicId": "m1", "musicName": "Rising", "musicAuthor": "Artist"}, "playCount": 1000},
+            {"id": "2", "text": "body scrub routine", "authorMeta": {"name": "b"},
+             "musicMeta": {"musicId": "m1", "musicName": "Rising", "musicAuthor": "Artist"}, "playCount": 2000},
+            {"id": "3", "text": "body care", "authorMeta": {"name": "a"},
+             "musicMeta": {"musicId": "m2", "musicName": "One off", "musicAuthor": "Artist"}, "playCount": 9000},
+        ]
+        snapshot = build_sound_snapshot(rows)
+        self.assertEqual([sound["track"] for sound in snapshot["sounds"]], ["Rising"])
 
     def test_new_format_requires_cross_creator_replication(self):
         dataset = {"generated_at": "2026-09-07T00:00:00Z", "viral_videos": [

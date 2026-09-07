@@ -5,7 +5,7 @@ on:
     branches:
       - main
   schedule:
-    - cron: "15 1 * * *"
+    - cron: "15 */6 * * *"
   workflow_dispatch:
     inputs:
       fixture:
@@ -29,6 +29,8 @@ jobs:
     env:
       LIVE_PROVIDER_URL: ${{ secrets.LIVE_PROVIDER_URL }}
       LIVE_PROVIDER_TOKEN: ${{ secrets.LIVE_PROVIDER_TOKEN }}
+      APIFY_TOKEN: ${{ secrets.APIFY_TOKEN }}
+      APIFY_ACTOR_ID: ${{ vars.APIFY_ACTOR_ID }}
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
       RADAR_DASHBOARD_URL: https://taogiangmyvn-ux.github.io/viral-angle-radar/
     environment:
@@ -43,7 +45,12 @@ jobs:
       - name: Restore trend comparison baseline
         uses: actions/cache/restore@v4
         with:
-          path: data/trend_baseline.json
+          path: |
+            data/trend_baseline.json
+            data/radar.db
+            data/creator_candidates.generated.json
+            data/trending_sounds.generated.json
+            data/scout_status.json
           key: viral-format-baseline-${{ github.run_id }}
           restore-keys: |
             viral-format-baseline-
@@ -51,11 +58,14 @@ jobs:
         run: pip install -r requirements.txt
       - name: Run tests
         run: python -m unittest discover -s tests -v
+      - name: Scout TikTok search and creator profiles
+        if: ${{ env.APIFY_TOKEN != '' }}
+        run: python -m viral_radar daily --scout
       - name: Build daily outputs from configured provider
-        if: ${{ env.LIVE_PROVIDER_URL != '' }}
+        if: ${{ env.APIFY_TOKEN == '' && env.LIVE_PROVIDER_URL != '' }}
         run: python -m viral_radar daily --live
-      - name: Build outputs from verified manual source library when no provider is configured
-        if: ${{ env.LIVE_PROVIDER_URL == '' }}
+      - name: Build manual library and show disconnected scout status
+        if: ${{ env.APIFY_TOKEN == '' && env.LIVE_PROVIDER_URL == '' }}
         run: python -m viral_radar daily
       - name: Upload Excel
         uses: actions/upload-artifact@v4
@@ -66,7 +76,12 @@ jobs:
         if: always()
         uses: actions/cache/save@v4
         with:
-          path: data/trend_baseline.json
+          path: |
+            data/trend_baseline.json
+            data/radar.db
+            data/creator_candidates.generated.json
+            data/trending_sounds.generated.json
+            data/scout_status.json
           key: viral-format-baseline-${{ github.run_id }}
       - name: Configure Pages
         uses: actions/configure-pages@v5

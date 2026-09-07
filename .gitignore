@@ -8,6 +8,8 @@ web/dist/
 data/radar.db
 data/run-log.jsonl
 data/trend_baseline.json
+data/creator_candidates.generated.json
+data/trending_sounds.generated.json
 exports/*.xlsx
 exports/briefs/
 work/

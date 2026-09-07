@@ -1,0 +1,43 @@
+{
+  "market": "US",
+  "language": "en",
+  "results_per_query": 10,
+  "max_creator_profiles": 20,
+  "profile_posts": 8,
+  "queries": {
+    "always": [
+      "body care routine",
+      "everything shower body care",
+      "body scrub routine",
+      "body care honest review",
+      "post shower routine",
+      "strawberry legs routine",
+      "KP body care routine",
+      "luxury body care review"
+    ],
+    "sep": [
+      "holiday body care gift early",
+      "gift closet beauty",
+      "Aesop alternative body care",
+      "beauty gifts under 100"
+    ],
+    "oct": [
+      "body care gift guide",
+      "hostess gift beauty",
+      "gift basket body care",
+      "gift closet ideas"
+    ],
+    "nov": [
+      "Black Friday body care gift",
+      "hostess gift guide",
+      "beauty gifts for her",
+      "one for her one for me gift"
+    ],
+    "dec": [
+      "Secret Santa beauty gift",
+      "White Elephant body care gift",
+      "last minute beauty gift",
+      "holiday party hostess gift"
+    ]
+  }
+}

@@ -104,10 +104,11 @@ def load_csv(path: Path) -> list[dict[str, Any]]:
         return list(csv.DictReader(handle))
 
 
-def discover(*, fixture: bool = False, csv_path: Path | None = None, observed_at: str | None = None, live: bool = False) -> dict[str, Any]:
-    if live:
-        from .providers import fetch_live
-        provider, raw_items = "live_http_provider", fetch_live()
+def discover(*, fixture: bool = False, csv_path: Path | None = None, observed_at: str | None = None, live: bool = False, scout: bool = False) -> dict[str, Any]:
+    scout_status = None
+    if live or scout:
+        from .providers import fetch_provider
+        provider, raw_items, scout_status = fetch_provider(scout=scout)
     elif fixture:
         provider, raw_items = "fixture", load_fixture()
     else:
@@ -187,7 +188,8 @@ def discover(*, fixture: bool = False, csv_path: Path | None = None, observed_at
         conn.commit()
     finally:
         conn.close()
-    result = {"provider": provider, "imported": len(normalized), "errors": errors, "observed_at": snapshot_time}
+    result = {"provider": provider, "imported": len(normalized), "errors": errors, "observed_at": snapshot_time,
+              "scout_status": scout_status}
     log_run({"event": "discover", "at": now_iso(), **result})
     return result
 
@@ -355,7 +357,8 @@ def build_dataset() -> dict[str, Any]:
             "breakout_count": sum(item["viral_tier"] in {"Breakout", "Mega"} for item in items),
         })
     angles.sort(key=lambda item: (item["breakout_count"], item["max_likes"], item["max_score"]), reverse=True)
-    sound_path = ROOT / "data" / "trending_sounds.json"
+    generated_sound_path = ROOT / "data" / "trending_sounds.generated.json"
+    sound_path = generated_sound_path if generated_sound_path.exists() else ROOT / "data" / "trending_sounds.json"
     trending_sounds = json.loads(sound_path.read_text(encoding="utf-8")) if sound_path.exists() else {
         "market": "United States", "verified_at": None, "sounds": [],
         "rights_note": "No verified sound snapshot is available."
@@ -363,13 +366,26 @@ def build_dataset() -> dict[str, Any]:
     routine_path = ROOT / "data" / "routine_references.json"
     routine_references = json.loads(routine_path.read_text(encoding="utf-8")) if routine_path.exists() else {"references": []}
     creator_path = ROOT / "data" / "creator_candidates.json"
+    generated_creator_path = ROOT / "data" / "creator_candidates.generated.json"
     creator_source = json.loads(creator_path.read_text(encoding="utf-8")) if creator_path.exists() else {"candidates": []}
-    creator_candidates = [score_creator_candidate(item) for item in creator_source.get("candidates", [])]
+    generated_source = json.loads(generated_creator_path.read_text(encoding="utf-8")) if generated_creator_path.exists() else {"candidates": []}
+    merged_creators = {}
+    for item in creator_source.get("candidates", []) + generated_source.get("candidates", []):
+        key = str(item.get("handle") or item.get("profile_url") or "").lower()
+        if key:
+            existing = merged_creators.get(key)
+            if not existing or int(item.get("audited_post_count") or 0) >= int(existing.get("audited_post_count") or 0):
+                merged_creators[key] = item
+    creator_candidates = [score_creator_candidate(item) for item in merged_creators.values()]
     creator_candidates.sort(key=lambda item: item["shortlist_score"], reverse=True)
     monthly_path = ROOT / "data" / "monthly_content_plan.json"
     monthly_source = json.loads(monthly_path.read_text(encoding="utf-8")) if monthly_path.exists() else {"pillars": [], "months": {}, "streams": []}
     monthly_strategy = build_monthly_strategy(monthly_source, viral_videos, routine_references.get("references", []))
     latest_alert = json.loads(ALERT_PATH.read_text(encoding="utf-8")) if ALERT_PATH.exists() else None
+    scout_path = ROOT / "data" / "scout_status.json"
+    scout_status = json.loads(scout_path.read_text(encoding="utf-8")) if scout_path.exists() else {
+        "connected": False, "reason": "No scout run has completed", "cadence": "Not connected"
+    }
     return {
         "generated_at": now_iso(),
         "is_fixture_only": bool(scored) and all(item["is_fixture"] for item in scored),
@@ -380,7 +396,8 @@ def build_dataset() -> dict[str, Any]:
         "trending_sounds": trending_sounds,
         "routine_references": routine_references,
         "creator_candidates": creator_candidates,
-        "creator_discovery_method": creator_source.get("method"),
+        "creator_discovery_method": generated_source.get("method") or creator_source.get("method"),
+        "scout_status": scout_status,
         "creator_scoring_rules": {
             "micro_fit": "Best band 5K–50K followers; up to 100K may remain in research queue.",
             "engagement_evidence": "High-confidence engagement requires at least 3 comparable recent posts.",
@@ -773,8 +790,19 @@ def export_excel() -> Path:
     return output
 
 
-def daily(fixture: bool, live: bool = False) -> dict[str, Any]:
-    discovery = discover(fixture=fixture, live=live)
+def daily(fixture: bool, live: bool = False, scout: bool = False) -> dict[str, Any]:
+    if not (fixture or live or scout):
+        from .scout import write_disconnected_status
+        write_disconnected_status("No APIFY_TOKEN or LIVE_PROVIDER_URL is configured; rebuilt from the verified manual library")
+    try:
+        discovery = discover(fixture=fixture, live=live, scout=scout)
+    except Exception as exc:
+        if not scout:
+            raise
+        from .scout import write_error_status
+        status = write_error_status(str(exc))
+        discovery = {"provider": "apify_tiktok_scout", "imported": 0, "errors": [str(exc)],
+                     "observed_at": now_iso(), "scout_status": status, "stale_data_preserved": True}
     ingest_brand("cobas-daughter")
     q4_products = [
         "Exfoliate & Nourish Body Care Set (3-Piece)",

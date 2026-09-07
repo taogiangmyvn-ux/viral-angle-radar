@@ -1,0 +1,7 @@
+{
+  "connected": false,
+  "provider": null,
+  "last_run": "2026-09-07T18:33:54+00:00",
+  "reason": "No APIFY_TOKEN or LIVE_PROVIDER_URL is configured; rebuilt from the verified manual library",
+  "cadence": "Waiting for an approved live data provider credential"
+}
