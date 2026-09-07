@@ -234,6 +234,8 @@ def score() -> list[dict[str, Any]]:
 
 def build_dataset() -> dict[str, Any]:
     scored = score()
+    if any(not item["is_fixture"] for item in scored):
+        scored = [item for item in scored if not item["is_fixture"]]
     grouped: dict[str, list[dict[str, Any]]] = {}
     for item in scored:
         grouped.setdefault(item["primary_angle"], []).append(item)

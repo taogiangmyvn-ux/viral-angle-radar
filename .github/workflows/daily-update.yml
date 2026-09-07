@@ -42,9 +42,9 @@ jobs:
       - name: Build daily outputs from configured provider
         if: ${{ env.LIVE_PROVIDER_URL != '' }}
         run: python -m viral_radar daily --live
-      - name: Build demo outputs when no provider is configured
+      - name: Build outputs from verified manual source library when no provider is configured
         if: ${{ env.LIVE_PROVIDER_URL == '' }}
-        run: python -m viral_radar daily --fixture
+        run: python -m viral_radar daily
       - name: Upload Excel
         uses: actions/upload-artifact@v4
         with:
