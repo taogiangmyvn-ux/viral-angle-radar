@@ -415,7 +415,8 @@ def generate_brief(slug: str, product: str, top_angles: int = 3) -> dict[str, An
     for angle in selected_angles:
         candidate = next(item for item in dataset["videos"] if item["primary_angle"] == angle["angle"])
         selected_videos.append(candidate)
-    brief_id = f"{slug}-{datetime.now().strftime('%Y%m%d-%H%M%S')}"
+    product_slug = re.sub(r"[^a-z0-9]+", "-", product.lower()).strip("-")[:36]
+    brief_id = f"{slug}-{product_slug}-{datetime.now().strftime('%Y%m%d-%H%M%S-%f')}"
     tone = ", ".join(profile.get("tone", ["clear", "credible"]))
     product_lower = product.lower()
     is_refill = "refill" in product_lower
@@ -668,9 +669,14 @@ def export_excel() -> Path:
 def daily(fixture: bool, live: bool = False) -> dict[str, Any]:
     discovery = discover(fixture=fixture, live=live)
     ingest_brand("cobas-daughter")
-    brief = generate_brief("cobas-daughter", "Bath & Body Care Gift Set")
+    q4_products = [
+        "Exfoliate & Nourish Body Care Set (3-Piece)",
+        "Scrub & Soothe Body Care Gift Set (7-Piece)",
+        "Bath & Body Care Gift Set – Luxury Spa-Inspired Gift Basket (7-Piece)",
+    ]
+    briefs = [generate_brief("cobas-daughter", product) for product in q4_products]
     site = export_site()
     workbook = export_excel()
-    result = {"discovery": discovery, "brief_id": brief["brief_id"], "site": str(site), "workbook": str(workbook)}
+    result = {"discovery": discovery, "brief_id": briefs[0]["brief_id"], "brief_ids": [brief["brief_id"] for brief in briefs], "site": str(site), "workbook": str(workbook)}
     log_run({"event": "daily_complete", "at": now_iso(), **result})
     return result

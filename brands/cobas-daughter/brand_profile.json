@@ -14,6 +14,26 @@
     "Bath & Body Care Gift Set",
     "Scrub & Soothe Body Care Gift Set"
   ],
+  "q4_product_catalog": [
+    {
+      "name": "Exfoliate & Nourish Body Care Set (3-Piece)",
+      "url": "https://cobasdaughter.com/products/cobas-daughter-exfoliate-nourish-body-care-set-turmeric-honey-salt-scrub-almond-orange-scrub-aloe-gel-3-pieces",
+      "packaging": "Gift-ready box with travel-friendly sizes",
+      "contents": ["Turmeric Honey Salt Exfoliator", "Almond Orange Exfoliator", "Aloe Soothing Gel"]
+    },
+    {
+      "name": "Scrub & Soothe Body Care Gift Set (7-Piece)",
+      "url": "https://cobasdaughter.com/products/scrub-soothe-ritual-set-7-piece",
+      "packaging": "Reusable handwoven water hyacinth basket",
+      "contents": ["Full-size Robusta Coffee Body Exfoliator", "Full-size Aloe Soothing Gel", "3-piece mini Exfoliate & Nourish Set", "Natural exfoliating loofah"]
+    },
+    {
+      "name": "Bath & Body Care Gift Set – Luxury Spa-Inspired Gift Basket (7-Piece)",
+      "url": "https://cobasdaughter.com/products/bath-body-care-gift-basket-7-piece-spa-inspired-set",
+      "packaging": "Reusable handwoven rattan bag",
+      "contents": ["3in1 Soap – Grapefruit & Eucalyptus", "3in1 Soap – Persian Lime & Coconut", "3-piece mini Exfoliate & Nourish Set", "Natural exfoliating loofah"]
+    }
+  ],
   "approved_claims": [
     "The 3-in-1 Soap cleanses body, hands and bath in one ritual.",
     "The Robusta Coffee Body Exfoliator provides physical exfoliation with finely milled coffee grounds.",
