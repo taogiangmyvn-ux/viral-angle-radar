@@ -126,6 +126,23 @@ class PipelineTests(unittest.TestCase):
             self.assertEqual(sum(x["pieces"] for x in allocation["angles"]), expected)
             self.assertTrue(allocation["reconciled"])
 
+    def test_sep_oct_roundup_guides_reconcile(self):
+        plan = json.loads((Path(__file__).parents[1] / "data" / "monthly_content_plan.json").read_text())
+        guides = plan["roundup_guides"]
+        for month in ("sep", "oct"):
+            guide = guides[month]
+            self.assertEqual(guide["asset_total"], 10)
+            self.assertEqual(sum(x["pieces"] for x in guide["content_mix"]), 10)
+            self.assertEqual(sum(x["pieces"] for x in guide["product_mix"]), 10)
+            self.assertEqual(len(guide["assignments"]), 10)
+        self.assertEqual([x["pieces"] for x in guides["sep"]["content_mix"]], [6, 4])
+        self.assertEqual([x["pieces"] for x in guides["oct"]["content_mix"]], [6, 4])
+        self.assertEqual([x["pieces"] for x in guides["sep"]["product_mix"]], [5, 5])
+        self.assertEqual([x["pieces"] for x in guides["oct"]["product_mix"]], [5, 5])
+        september_copy = json.dumps(guides["sep"]["assignments"]).lower()
+        self.assertNotIn("hostess", september_copy)
+        self.assertNotIn("secret santa", september_copy)
+
     def test_monthly_priority_shift_alerts(self):
         dataset = {"generated_at": "2026-09-07T00:00:00Z", "viral_videos": [], "creator_candidates": [],
                    "monthly_strategy": {"month_order": ["nov"], "pillars": [

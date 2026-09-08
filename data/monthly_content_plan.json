@@ -26,6 +26,64 @@
     {"id":"kimie","name":"Kimie","stream":"Carousel round-up","monthly":{"sep":10,"oct":10,"nov":20,"dec":20},"brief_depth":"Can publish $80 basket stories without inventory, but cannot shoot physical-product proof.","can_hold_product":false,"allowed_formats":["carousel","round-up","gift closet","price or value comparison"],"hard_limits":["No unboxing","No texture shot","No before-and-after","No physical product handling","No CPM claim"]},
     {"id":"intern","name":"New intern","stream":"Reels / integration","monthly":{"sep":15,"oct":15,"nov":20,"dec":20},"brief_depth":"Routine integration plus growing gifting round-ups. Line is capped at 15 posts per month until the role is filled.","can_hold_product":true,"allowed_formats":["voice-over routine","trendy-music edit","round-up","integration reel"],"hard_limits":["If role is unfilled, cap at 15 posts","Gifting round-ups grow from 5 to 13 posts"]}
   ],
+  "roundup_guides": {
+    "sep": {
+      "title": "September round-up guide · earn attention before gift season",
+      "owner": "Round-up content producer",
+      "asset_total": 10,
+      "intro": "September is a post-summer body-care reset, not a holiday gift-guide month. Build authority around real body concerns and quiet-luxury discovery first. Seed four save-worthy gift ideas softly, without hostess, occasion or holiday-pressure language.",
+      "content_mix": [
+        {"label":"Routine + search demand","pieces":6,"note":"Post-summer dryness, KP, strawberry legs, everything-shower and bathroom-shelf behavior."},
+        {"label":"Early gift seeds","pieces":4,"note":"Save-for-later discovery and gift-closet thinking; no holiday urgency or occasion language."}
+      ],
+      "product_mix": [
+        {"label":"Miniset","pieces":5,"note":"Quiet-luxury discovery, shelf appeal and soft gift seeding."},
+        {"label":"Scrub + Aloe","pieces":5,"note":"Problem-to-solution round-ups and fall routine reset."}
+      ],
+      "focus": ["Post-summer body reset","Everything-shower search","Leave It Out / bathroom shelf","Aesop Alternative based on design, price position and texture only","Soft Gift Closet seeding"],
+      "avoid": ["Hostess, Secret Santa, White Elephant or occasion language","Holiday countdowns or urgency","Basket content before inventory is available","Deal, dupe or discount-haul framing","Any claim that CoBa smells like Aesop"],
+      "assignments": [
+        {"no":1,"lane":"Routine","campaign":"Post-summer body reset","strategic_angle":"Integrate it into a real body routine","title":"The body-care reset I make when summer ends","product":"Scrub + Aloe","job":"Create seasonal relevance without gifting language."},
+        {"no":2,"lane":"Routine","campaign":"Problem → solution","strategic_angle":"Earn the right to recommend it as a gift","title":"Body scrubs that actually help with strawberry-leg texture","product":"Scrub","job":"Capture high-intent search with proof-led criteria."},
+        {"no":3,"lane":"Routine","campaign":"Everything shower","strategic_angle":"Turn products into a complete ritual","title":"Everything-shower steps that make body care feel complete","product":"Scrub + Aloe","job":"Show sequence and routine value, not isolated claims."},
+        {"no":4,"lane":"Routine","campaign":"Fall body-care switch","strategic_angle":"Integrate it into a real body routine","title":"What I change in my body routine when the air gets drier","product":"Aloe + Scrub","job":"Bridge summer recovery into fall dryness."},
+        {"no":5,"lane":"Routine","campaign":"Leave It Out","strategic_angle":"Gift the discovery she has not seen","title":"What earns a permanent spot on my bathroom shelf","product":"Miniset","job":"Make shelf appeal and everyday visibility the proof."},
+        {"no":6,"lane":"Routine","campaign":"Aesop Alternative","strategic_angle":"Earn the right to recommend it as a gift","title":"Quiet-luxury body care worth leaving out","product":"Scrub + Aloe","job":"Compare design, price position and texture—not scent."},
+        {"no":7,"lane":"Gift seed","campaign":"Gift Closet","strategic_angle":"Be the first to edit the season's best sets","title":"Small body-care discoveries I am saving before gift season","product":"Miniset","job":"Seed discovery while keeping the language early and low-pressure."},
+        {"no":8,"lane":"Gift seed","campaign":"Gift Closet","strategic_angle":"Build a recipient-coded ritual","title":"Small sets I keep on hand for the friend who notices details","product":"Miniset","job":"Introduce recipient specificity without naming an occasion."},
+        {"no":9,"lane":"Gift seed","campaign":"Aesop Alternative","strategic_angle":"Gift the discovery she has not seen","title":"For the Aesop girl who wants a less obvious discovery","product":"Miniset","job":"Own the taste and discovery space without implying a dupe."},
+        {"no":10,"lane":"Gift seed","campaign":"Gift Closet","strategic_angle":"Curate her aesthetic in miniature","title":"A tiny body-care ritual for the quiet-luxury friend","product":"Miniset","job":"Make the mini format feel intentional and aesthetic."}
+      ]
+    },
+    "oct": {
+      "title": "October round-up guide · open gifting without losing routine demand",
+      "owner": "Round-up content producer",
+      "asset_total": 10,
+      "intro": "October is the bridge into active gifting. Move to six gift-led round-ups and keep four routine/search posts so the account does not become a holiday catalog. Gift content should solve a recipient problem or curate a point of view—not simply list products.",
+      "content_mix": [
+        {"label":"Gift-led round-ups","pieces":6,"note":"Gift Closet, recipient logic, Aesop Alternative and thoughtful under-$50 discovery."},
+        {"label":"Routine + search demand","pieces":4,"note":"KP, dry-weather reset, everything shower and post-shower soothing."}
+      ],
+      "product_mix": [
+        {"label":"Miniset","pieces":5,"note":"Primary October gift and Aesop Alternative discovery vehicle."},
+        {"label":"Scrub + Aloe","pieces":5,"note":"One gift-led body-care edit plus four evergreen routine posts."}
+      ],
+      "focus": ["Gift Closet starter edits","Specific recipient problems","Aesop Alternative as taste + design + value","Useful body care rather than clutter","Keep four search-led routine posts live"],
+      "avoid": ["Generic holiday gift-guide dumps","Deal, dupe or discount-haul framing","Fake countdowns, low-stock claims or unconfirmed pricing","Scent-dupe comparisons with Aesop","Unconfirmed bundle or set names"],
+      "assignments": [
+        {"no":1,"lane":"Gift","campaign":"Gift Closet","strategic_angle":"Be the first to edit the season's best sets","title":"The first five body-care gifts going into my gift closet","product":"Miniset","job":"Open the season with a curated edit, not a generic list."},
+        {"no":2,"lane":"Gift","campaign":"Gift Guide","strategic_angle":"Build a recipient-coded ritual","title":"A thoughtful body-care gift for the friend who notices every detail","product":"Miniset","job":"Make the recipient—not the product category—the organizing idea."},
+        {"no":3,"lane":"Gift","campaign":"Gift Guide","strategic_angle":"Gift the discovery she has not seen","title":"What to give the woman who already knows every beauty brand","product":"Miniset","job":"Use novelty and Vietnamese origin as the discovery payoff."},
+        {"no":4,"lane":"Gift","campaign":"Aesop Alternative","strategic_angle":"Gift the discovery she has not seen","title":"For the Aesop girl: a less expected body-care discovery","product":"Miniset","job":"Compare aesthetic position, presentation and texture only."},
+        {"no":5,"lane":"Gift","campaign":"Leave It Out","strategic_angle":"Curate her aesthetic in miniature","title":"The gift set pretty enough to live on her bathroom shelf","product":"Miniset","job":"Turn display value into a reason to gift."},
+        {"no":6,"lane":"Gift","campaign":"Useful, not clutter","strategic_angle":"Turn products into a complete ritual","title":"Body-care gifts she will actually finish, not store in a drawer","product":"Scrub + Aloe","job":"Frame usefulness and routine integration as gift proof."},
+        {"no":7,"lane":"Routine","campaign":"Problem → solution","strategic_angle":"Earn the right to recommend it as a gift","title":"My fall shortlist for rough, bumpy body skin","product":"Scrub","job":"Maintain problem-led search demand."},
+        {"no":8,"lane":"Routine","campaign":"Everything shower","strategic_angle":"Turn products into a complete ritual","title":"The exfoliate-then-soothe order for an everything shower","product":"Scrub + Aloe","job":"Teach a complete, memorable sequence."},
+        {"no":9,"lane":"Routine","campaign":"Dry-weather switch","strategic_angle":"Integrate it into a real body routine","title":"The lightweight post-shower step I add when fall feels dry","product":"Aloe","job":"Give Aloe a seasonal routine role."},
+        {"no":10,"lane":"Routine","campaign":"Routine shelf edit","strategic_angle":"Integrate it into a real body routine","title":"What stays in my weekly body-care rotation this fall","product":"Scrub + Aloe","job":"Close the month with candid repeat-use credibility."}
+      ]
+    }
+  },
   "hard_rules": [
     "Never say CoBa smells like Aesop. Compare only price position, packaging and texture.",
     "Never use fake urgency. Only use the confirmed Dec 18 cutoff, truthful inventory or visible bundle math.",
