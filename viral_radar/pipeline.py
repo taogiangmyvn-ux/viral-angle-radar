@@ -441,14 +441,31 @@ def score_creator_candidate(item: dict[str, Any]) -> dict[str, Any]:
             "shortlist_status": status}
 
 
+def allocate_pieces(total: int, weights: dict[str, Any]) -> dict[str, int]:
+    """Convert planning weights into exact integer piece counts with largest remainder."""
+    clean = {str(key): max(0.0, float(value or 0)) for key, value in weights.items()}
+    denominator = sum(clean.values())
+    if total <= 0 or denominator <= 0:
+        return {key: 0 for key in clean}
+    raw = {key: total * value / denominator for key, value in clean.items()}
+    allocated = {key: math.floor(value) for key, value in raw.items()}
+    remaining = total - sum(allocated.values())
+    order = sorted(clean, key=lambda key: (raw[key] - allocated[key], clean[key]), reverse=True)
+    for key in order[:remaining]:
+        allocated[key] += 1
+    return allocated
+
+
 def build_monthly_strategy(plan: dict[str, Any], viral_videos: list[dict[str, Any]], routine_refs: list[dict[str, Any]]) -> dict[str, Any]:
     by_url = {item.get("canonical_url"): item for item in viral_videos}
     by_url.update({item.get("url"): item for item in routine_refs})
     month_order = [key for key in ("sep", "oct", "nov", "dec") if key in plan.get("months", {})]
     monthly_max = {month: max((pillar.get("monthly", {}).get(month, 0) for pillar in plan.get("pillars", [])), default=1) for month in month_order}
+    product_catalog = {item["id"]: item for item in plan.get("products", [])}
     pillars = []
     for pillar in plan.get("pillars", []):
         potential = {}
+        allocations = {}
         previous = None
         refs = []
         observed_evidence = []
@@ -484,9 +501,54 @@ def build_monthly_strategy(plan: dict[str, Any], viral_videos: list[dict[str, An
             score = allocation * 0.45 + seasonal * 0.25 + evidence * 0.20 + trajectory * 0.10
             potential[month] = {"score": round(score), "planned_posts": count, "allocation_score": round(allocation),
                                 "seasonal_fit_score": seasonal, "evidence_score": evidence, "trajectory_score": trajectory}
+            product_weights = pillar.get("product_mix_by_month", {}).get(month, {})
+            if not product_weights:
+                product_weights = {product_id: 1 for product_id in pillar.get("products", [])}
+            angle_weights = pillar.get("angle_mix_by_month", {}).get(month, {})
+            if not angle_weights:
+                angle_weights = {angle: 1 for angle in pillar.get("angles", [])}
+            product_counts = allocate_pieces(count, product_weights)
+            angle_counts = allocate_pieces(count, angle_weights)
+            lead_products = [key for key, value in sorted(product_counts.items(), key=lambda pair: pair[1], reverse=True) if value > 0]
+            allocations[month] = {
+                "total_pieces": count,
+                "products": [{"id": key, "name": product_catalog.get(key, {}).get("name", key),
+                              "role": product_catalog.get(key, {}).get("role", ""), "pieces": value,
+                              "share": round(value / count * 100) if count else 0}
+                             for key, value in product_counts.items()],
+                "angles": [{"angle": key, "pieces": value, "share": round(value / count * 100) if count else 0,
+                            "lead_products": lead_products[:2]} for key, value in angle_counts.items()],
+            }
             previous = count
-        pillars.append({**pillar, "monthly_potential": potential, "references": refs, "monthly_references": monthly_refs})
-    return {**plan, "month_order": month_order, "pillars": pillars,
+        pillars.append({**pillar, "monthly_potential": potential, "allocations": allocations,
+                        "references": refs, "monthly_references": monthly_refs})
+    month_allocations = {}
+    for month in month_order:
+        product_totals = {key: 0 for key in product_catalog}
+        matrix = []
+        angle_rows = []
+        total_pieces = sum(pillar.get("monthly", {}).get(month, 0) for pillar in pillars)
+        for pillar in pillars:
+            allocation = pillar["allocations"][month]
+            product_row = {item["id"]: item["pieces"] for item in allocation["products"]}
+            for key, value in product_row.items():
+                product_totals[key] = product_totals.get(key, 0) + value
+            matrix.append({"pillar_id": pillar["id"], "pillar": pillar["name"], "total_pieces": allocation["total_pieces"],
+                           "products": product_row})
+            for angle in allocation["angles"]:
+                angle_rows.append({**angle, "pillar_id": pillar["id"], "pillar": pillar["name"],
+                                   "lead_product_names": [product_catalog.get(key, {}).get("name", key) for key in angle["lead_products"]]})
+        owner_total = sum(owner.get("monthly", {}).get(month, 0) for owner in plan.get("streams", []))
+        month_allocations[month] = {
+            "total_pieces": total_pieces, "owner_capacity": owner_total,
+            "reconciled": total_pieces == owner_total == sum(product_totals.values()) == sum(row["pieces"] for row in angle_rows),
+            "products": [{**product_catalog[key], "pieces": value,
+                          "share": round(value / total_pieces * 100) if total_pieces else 0}
+                         for key, value in product_totals.items()],
+            "pillar_product_matrix": matrix,
+            "angles": sorted(angle_rows, key=lambda row: row["pieces"], reverse=True),
+        }
+    return {**plan, "month_order": month_order, "pillars": pillars, "month_allocations": month_allocations,
             "potential_method": "45% planned monthly weight + 25% seasonal fit + 20% observed reference strength + 10% quarter trajectory. This is a prioritization index, not a performance forecast."}
 
 

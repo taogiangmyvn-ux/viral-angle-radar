@@ -1,9 +1,10 @@
+import json
 import tempfile
 import unittest
 from pathlib import Path
 
 from viral_radar.alerts import detect_format_changes
-from viral_radar.pipeline import build_monthly_strategy, canonicalize_url, normalize, score_creator_candidate, viral_tier
+from viral_radar.pipeline import allocate_pieces, build_monthly_strategy, canonicalize_url, normalize, score_creator_candidate, viral_tier
 from viral_radar.scout import adapt_post, build_creator_candidates, build_sound_snapshot
 
 
@@ -113,6 +114,17 @@ class PipelineTests(unittest.TestCase):
         pillar = result["pillars"][0]
         self.assertEqual([pillar["monthly_potential"][m]["planned_posts"] for m in result["month_order"]], [2, 8, 22, 29])
         self.assertLess(pillar["monthly_potential"]["sep"]["score"], pillar["monthly_potential"]["dec"]["score"])
+
+    def test_piece_allocation_reconciles_exactly(self):
+        self.assertEqual(allocate_pieces(7, {"a": 50, "b": 30, "c": 20}), {"a": 4, "b": 2, "c": 1})
+        plan = json.loads((Path(__file__).parents[1] / "data" / "monthly_content_plan.json").read_text())
+        result = build_monthly_strategy(plan, [], [])
+        for month, expected in {"sep": 100, "oct": 120, "nov": 140, "dec": 150}.items():
+            allocation = result["month_allocations"][month]
+            self.assertEqual(allocation["total_pieces"], expected)
+            self.assertEqual(sum(x["pieces"] for x in allocation["products"]), expected)
+            self.assertEqual(sum(x["pieces"] for x in allocation["angles"]), expected)
+            self.assertTrue(allocation["reconciled"])
 
     def test_monthly_priority_shift_alerts(self):
         dataset = {"generated_at": "2026-09-07T00:00:00Z", "viral_videos": [], "creator_candidates": [],
