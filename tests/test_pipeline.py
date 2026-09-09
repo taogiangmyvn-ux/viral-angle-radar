@@ -143,6 +143,22 @@ class PipelineTests(unittest.TestCase):
         self.assertNotIn("hostess", september_copy)
         self.assertNotIn("secret santa", september_copy)
 
+
+    def test_september_miniset_affiliate_campaigns_are_launch_ready(self):
+        root = Path(__file__).parents[1]
+        pack = json.loads((root / "data" / "affiliate_campaigns.json").read_text())
+        self.assertEqual(pack["month"], "sep")
+        self.assertEqual(pack["product"]["id"], "exfoliate-3")
+        self.assertEqual(len(pack["campaigns"]), 2)
+        self.assertEqual(sum(x["suggested_assets"] for x in pack["campaigns"]), 10)
+        for campaign in pack["campaigns"]:
+            self.assertEqual(campaign["suggested_creators"], 5)
+            self.assertTrue((root / campaign["brief_path"]).exists())
+            brief = (root / campaign["brief_path"]).read_text().lower()
+            self.assertIn("affiliate disclosure", brief)
+            self.assertIn("coba's daughter", brief)
+            self.assertIn("scent-dupe", brief)
+
     def test_monthly_priority_shift_alerts(self):
         dataset = {"generated_at": "2026-09-07T00:00:00Z", "viral_videos": [], "creator_candidates": [],
                    "monthly_strategy": {"month_order": ["nov"], "pillars": [

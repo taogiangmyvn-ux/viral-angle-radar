@@ -381,6 +381,8 @@ def build_dataset() -> dict[str, Any]:
     monthly_path = ROOT / "data" / "monthly_content_plan.json"
     monthly_source = json.loads(monthly_path.read_text(encoding="utf-8")) if monthly_path.exists() else {"pillars": [], "months": {}, "streams": []}
     monthly_strategy = build_monthly_strategy(monthly_source, viral_videos, routine_references.get("references", []))
+    affiliate_path = ROOT / "data" / "affiliate_campaigns.json"
+    affiliate_campaigns = json.loads(affiliate_path.read_text(encoding="utf-8")) if affiliate_path.exists() else {"campaigns": []}
     latest_alert = json.loads(ALERT_PATH.read_text(encoding="utf-8")) if ALERT_PATH.exists() else None
     scout_path = ROOT / "data" / "scout_status.json"
     scout_status = json.loads(scout_path.read_text(encoding="utf-8")) if scout_path.exists() else {
@@ -406,6 +408,7 @@ def build_dataset() -> dict[str, Any]:
             "shortlist": "Only verified-US candidates with 3+ audited posts and score >=70 qualify for proactive alerts."
         },
         "monthly_strategy": monthly_strategy,
+        "affiliate_campaigns": affiliate_campaigns,
         "latest_trend_alert": latest_alert,
         "viral_rule": {"minimum_likes": 10000, "minimum_views": 1000000,
                        "definition": "Qualified when likes >= 10,000 OR views >= 1,000,000"},

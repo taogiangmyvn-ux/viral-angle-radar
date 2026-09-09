@@ -1,0 +1,42 @@
+{
+  "month": "sep",
+  "year": 2026,
+  "product": {
+    "id": "exfoliate-3",
+    "name": "Exfoliate & Nourish Body Care Set (3-Piece)",
+    "internal_name": "Miniset",
+    "url": "https://cobasdaughter.com/products/cobas-daughter-exfoliate-nourish-body-care-set-turmeric-honey-salt-scrub-almond-orange-scrub-aloe-gel-3-pieces"
+  },
+  "status": "draft_ready_for_platform",
+  "platform_fields_pending": ["affiliate platform", "commission", "optional flat fee", "shipping timeline", "usage-rights selection", "live price verification"],
+  "campaigns": [
+    {
+      "id": "sep-leave-it-out",
+      "name": "SEP · Leave It Out",
+      "campaign_territory": "Leave It Out",
+      "strategic_angle": "A compact Vietnamese body-care ritual beautiful and useful enough to earn a permanent place on her bathroom shelf.",
+      "september_role": "Routine and quiet-luxury discovery; no gifting language required.",
+      "suggested_creators": 5,
+      "deliverables_per_creator": 1,
+      "suggested_assets": 5,
+      "format": "25–45s vertical voice-over routine review or trendy-music edit",
+      "creator_keywords": ["#shelfie", "#bathroomshelf", "#everything shower", "#strawberrylegs", "#kpskin", "quiet luxury body care", "fall body care routine"],
+      "exclude": ["deal creators", "dupe-first creators", "discount hauls", "hostess or holiday framing"],
+      "brief_path": "campaigns/2026-09/sep-leave-it-out.md"
+    },
+    {
+      "id": "sep-the-gift-closet",
+      "name": "SEP · The Gift Closet",
+      "campaign_territory": "The Gift Closet",
+      "strategic_angle": "Test and save a less-obvious body-care discovery before the crowded holiday gift-guide season.",
+      "september_role": "Soft gift seed and search preparation; no occasion language.",
+      "suggested_creators": 5,
+      "deliverables_per_creator": 1,
+      "suggested_assets": 5,
+      "format": "30–45s talking-head or voice-over affiliate review",
+      "creator_keywords": ["#giftcloset", "#giftguide", "niche beauty gifts", "monthly beauty roundup", "products worth saving", "quiet luxury gifts"],
+      "exclude": ["deal creators", "dupe-first creators", "discount hauls", "generic listicles without product testing"],
+      "brief_path": "campaigns/2026-09/sep-the-gift-closet.md"
+    }
+  ]
+}
